@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import brodata  # noqa: F401  – imported so the brodata dependency is exercised
+import brodata
 import pandas as pd
 
 
@@ -26,4 +26,5 @@ def from_brodata() -> pd.DataFrame:
     True
     """
     # Convert to the same format as brodata.
-    pass
+    _ = brodata.gld.GroundwaterLevelDossier.from_bro_id("GLD000000012893")
+    raise NotImplementedError("from_brodata is not yet implemented.")

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-import scipy  # noqa: F401  – imported so the SciPy dependency is exercised
+import scipy
 
 from brofopy.exceptions import BronformatParseError  # noqa: F401
 
@@ -36,8 +36,9 @@ def read_bronformat(filepath: str | Path) -> pd.DataFrame:
     >>> isinstance(df, pd.DataFrame)
     True
     """
-    mat = scipy.io.loadmat(filepath)
-    return _parse_bronformat_mat(mat)
+    raise NotImplementedError("read_bronformat is not yet implemented.")
+    _ = scipy.io.loadmat(filepath)
+
 
 
 def _parse_bronformat_mat(mat: dict) -> pd.DataFrame:
@@ -55,7 +56,7 @@ def _parse_bronformat_mat(mat: dict) -> pd.DataFrame:
 
     Raises
     ------
-    NotImplementedError
-        Until the parsing implementation is complete.
+    BronformatParseError
+        If the file cannot be parsed as a valid Bronformat.
     """
-    raise NotImplementedError("_parse_bronformat_mat is not yet implemented.")
+    raise BronformatParseError("Parsing of Bronformat .mat files is not yet implemented.")
