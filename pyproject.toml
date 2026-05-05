@@ -7,7 +7,17 @@ name = "brofopy"
 version = "0.1.0"
 description = "Read Bronformat data with SciPy, convert to Pandas DataFrames and HydroPandas ObsCollections."
 readme = "README.md"
-license = { file = "LICENSE" }
+license = "MIT"
+license-files = ["LICENSE"]
+maintainers = [
+    { name = "J. R. von Asmuth", email = "jos.von.asmuth@3hydro.nl" },
+]
+authors = [
+    { name = "M.A. Vonk", email = "m.vonk@artesia-water.nl" },
+    { name = "R. Calje", email = "r.calje@artesia-water.nl" },
+    { name = "J. R. von Asmuth", email = "jos.von.asmuth@3hydro.nl" },
+    { name = "D. Krijnders", email = "dirkjan.krijnders@anteagroup.nl" },
+]
 requires-python = ">=3.11"
 dependencies = [
     "scipy>=1.16.0",
@@ -15,28 +25,27 @@ dependencies = [
     "hydropandas>=0.18.0",
     "brodata>=0.1.0",
 ]
+classifiers = [
+    'Programming Language :: Python :: 3 :: Only',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+    'Programming Language :: Python :: 3.13',
+    'Programming Language :: Python :: 3.14',
+]
 
 [project.optional-dependencies]
-dev = [
-    "pytest",
-    "pytest-cov",
-    "ruff",
-    "ty",
-]
-docs = [
-    "sphinx",
-    "sphinx-rtd-theme",
-    "myst-parser",
-]
+dev = ["pytest", "pytest-cov", "ruff", "ty"]
+docs = ["sphinx", "sphinx-rtd-theme", "myst-parser"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.ruff]
 src = ["src"]
+extend-include = ["*.ipynb"]
+show-fixes = true
+fix = true
 
 [tool.ruff.lint]
 extend-select = ["I", "D"]
-
-[tool.ruff.lint.pydocstyle]
-convention = "numpy"
+pydocstyle.convention = "numpy"
