@@ -3,13 +3,7 @@
 ![CI](https://github.com/martinvonk/brofopy/actions/workflows/ci.yml/badge.svg)
 ![Docs](https://github.com/martinvonk/brofopy/actions/workflows/docs.yml/badge.svg)
 
-A Python package that reads data from a specific *Bronformat* (source format from the Basisregistratie Ondergrond, BRO) using SciPy, converts it to Pandas DataFrames, and provides a workflow to further convert data into a HydroPandas `ObsCollection`.
-
-## Features
-
-- Read Bronformat files into `pandas.DataFrame` objects via SciPy.
-- Convert DataFrames to HydroPandas `ObsCollection` for groundwater analysis.
-- Fetch source data using the `brodata` package.
+BroFoPy is a Python package that reads data from the *BronFormat*. The Bronformat is an alternative dataformat for the [Basisregistratie Ondergrond, BRO](https://basisregistratieondergrond.nl/). BroFoPy uses [SciPy](https://github.com/scipy/scipy) to convert the BronFormat into a [Pandas]([https://pandas.pydata.org/docs/index.html](https://github.com/pandas-dev/pandas)) `DataFrame`, and provides a workflow to further convert data into a [HydroPandas](https://github.com/ArtesiaWater/hydropandas) `ObsCollection`.
 
 ## Installation
 
@@ -21,21 +15,6 @@ pip install brofopy
 
 ```bash
 pip install -e ".[dev]"
-```
-
-### Documentation dependencies
-
-```bash
-pip install -e ".[docs]"
-```
-
-## Quick start
-
-```python
-from brofopy import read_bronformat, to_obscollection
-
-df = read_bronformat("path/to/bronformat_file")
-obs = to_obscollection(df, meta={})
 ```
 
 ## License
