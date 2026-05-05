@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
   pull_request:
-    branches: [main]
+    branches: [ main, dev ]
 
 jobs:
   lint:
@@ -66,9 +66,6 @@ jobs:
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
-
-      - name: Install tox and tox-uv
-        run: uv tool install tox --with tox-uv
 
       - name: Install dev dependencies
         run: uv sync --extra dev
