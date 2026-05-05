@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import pandas as pd
 import brodata  # noqa: F401  – imported so the brodata dependency is exercised
+import pandas as pd
 
 
 def from_brodata() -> pd.DataFrame:
