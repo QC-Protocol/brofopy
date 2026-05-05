@@ -1,4 +1,4 @@
-"""Utility helpers for bronformat_reader."""
+"""Utility helpers for brofopy."""
 
 from __future__ import annotations
 

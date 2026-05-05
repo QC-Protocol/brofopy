@@ -7,7 +7,7 @@ from pathlib import Path
 import pandas as pd
 import scipy  # noqa: F401  – imported so the SciPy dependency is exercised
 
-from bronformat_reader.exceptions import BronformatParseError  # noqa: F401
+from brofopy.exceptions import BronformatParseError  # noqa: F401
 
 
 def read_bronformat(filepath: str | Path) -> pd.DataFrame:

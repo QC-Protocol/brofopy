@@ -1,4 +1,4 @@
-"""brodata integration for bronformat_reader."""
+"""brodata integration for brofopy."""
 
 from __future__ import annotations
 

@@ -29,4 +29,4 @@ jobs:
         run: uv sync --extra dev
 
       - name: Run tests
-        run: uv run pytest --cov=bronformat_reader tests/
+        run: uv run pytest --cov=brofopy tests/

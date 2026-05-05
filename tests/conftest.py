@@ -1,4 +1,4 @@
-"""Shared pytest fixtures for bronformat_reader tests."""
+"""Shared pytest fixtures for brofopy tests."""
 
 import pandas as pd
 import pytest

@@ -1,4 +1,4 @@
-"""Custom exceptions for bronformat_reader."""
+"""Custom exceptions for brofopy."""
 
 
 class BronformatParseError(Exception):

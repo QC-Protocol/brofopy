@@ -1,4 +1,4 @@
-"""HydroPandas integration for bronformat_reader."""
+"""HydroPandas integration for brofopy."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ def to_obscollection(df: pd.DataFrame, meta: dict) -> ObsCollection:
     Parameters
     ----------
     df : pd.DataFrame
-        DataFrame produced by :func:`bronformat_reader.reader.read_bronformat`.
+        DataFrame produced by :func:`brofopy.reader.read_bronformat`.
     meta : dict
         Metadata dictionary with observation attributes (e.g. location,
         unit, source).

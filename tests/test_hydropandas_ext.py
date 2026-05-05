@@ -1,8 +1,8 @@
-"""Tests for bronformat_reader.hydropandas_ext."""
+"""Tests for brofopy.hydropandas_ext."""
 
 import pytest
 
-from bronformat_reader.hydropandas_ext import to_obscollection
+from brofopy.hydropandas_ext import to_obscollection
 
 
 def test_to_obscollection_raises_not_implemented(sample_dataframe) -> None:

@@ -4,7 +4,7 @@ API Reference
 reader
 ------
 
-.. automodule:: bronformat_reader.reader
+.. automodule:: brofopy.reader
    :members:
    :undoc-members:
    :show-inheritance:
@@ -12,7 +12,7 @@ reader
 hydropandas_ext
 ---------------
 
-.. automodule:: bronformat_reader.hydropandas_ext
+.. automodule:: brofopy.hydropandas_ext
    :members:
    :undoc-members:
    :show-inheritance:
@@ -20,7 +20,7 @@ hydropandas_ext
 brodata_ext
 -----------
 
-.. automodule:: bronformat_reader.brodata_ext
+.. automodule:: brofopy.brodata_ext
    :members:
    :undoc-members:
    :show-inheritance:
@@ -28,7 +28,7 @@ brodata_ext
 utils
 -----
 
-.. automodule:: bronformat_reader.utils
+.. automodule:: brofopy.utils
    :members:
    :undoc-members:
    :show-inheritance:
@@ -36,7 +36,7 @@ utils
 exceptions
 ----------
 
-.. automodule:: bronformat_reader.exceptions
+.. automodule:: brofopy.exceptions
    :members:
    :undoc-members:
    :show-inheritance:

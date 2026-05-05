@@ -6,7 +6,7 @@ import sys
 # Make the src/ layout visible to Sphinx autodoc
 sys.path.insert(0, os.path.abspath("../../src"))
 
-project = "bronformat-reader"
+project = "brofopy"
 author = "martinvonk"
 release = "0.1.0"
 

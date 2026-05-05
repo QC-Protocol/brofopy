@@ -1,8 +1,8 @@
-"""Tests for bronformat_reader.brodata_ext."""
+"""Tests for brofopy.brodata_ext."""
 
 import pytest
 
-from bronformat_reader.brodata_ext import from_brodata
+from brofopy.brodata_ext import from_brodata
 
 
 def test_from_brodata_raises_not_implemented() -> None:

@@ -1,4 +1,4 @@
-# bronformat-reader
+# brofopy
 
 ![CI](https://github.com/martinvonk/brofopy/actions/workflows/ci.yml/badge.svg)
 ![Docs](https://github.com/martinvonk/brofopy/actions/workflows/docs.yml/badge.svg)
@@ -14,7 +14,7 @@ A Python package that reads data from a specific *Bronformat* (source format fro
 ## Installation
 
 ```bash
-pip install bronformat-reader
+pip install brofopy
 ```
 
 ### Development install
@@ -32,7 +32,7 @@ pip install -e ".[docs]"
 ## Quick start
 
 ```python
-from bronformat_reader import read_bronformat, to_obscollection
+from brofopy import read_bronformat, to_obscollection
 
 df = read_bronformat("path/to/bronformat_file")
 obs = to_obscollection(df, meta={})
