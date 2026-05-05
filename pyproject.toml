@@ -34,7 +34,7 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest", "pytest-cov", "ruff", "ty"]
+dev = ["pytest", "pytest-cov", "ruff", "ty", "pre-commit"]
 docs = ["sphinx", "sphinx-rtd-theme", "myst-parser"]
 
 [tool.setuptools.packages.find]
