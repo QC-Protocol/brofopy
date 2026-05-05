@@ -36,4 +36,26 @@ def read_bronformat(filepath: str | Path) -> pd.DataFrame:
     >>> isinstance(df, pd.DataFrame)
     True
     """
-    raise NotImplementedError("read_bronformat is not yet implemented.")
+    mat = scipy.io.loadmat(filepath)
+    return _parse_bronformat_mat(mat)
+
+
+def _parse_bronformat_mat(mat: dict) -> pd.DataFrame:
+    """Parse the dictionary loaded from a Bronformat .mat file into a DataFrame.
+
+    Parameters
+    ----------
+    mat : dict
+        The dictionary returned by scipy.io.loadmat when reading a Bronformat file.
+
+    Returns
+    -------
+    pd.DataFrame
+        A DataFrame containing the parsed data from the Bronformat file.
+
+    Raises
+    ------
+    NotImplementedError
+        Until the parsing implementation is complete.
+    """
+    raise NotImplementedError("_parse_bronformat_mat is not yet implemented.")

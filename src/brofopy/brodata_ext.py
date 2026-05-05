@@ -25,4 +25,5 @@ def from_brodata() -> pd.DataFrame:
     >>> isinstance(df, pd.DataFrame)
     True
     """
-    raise NotImplementedError("from_brodata is not yet implemented.")
+    # Convert to the same format as brodata.
+    pass
