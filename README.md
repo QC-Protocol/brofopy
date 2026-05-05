@@ -1,7 +1,7 @@
 # brofopy
 
-![CI](https://github.com/martinvonk/brofopy/actions/workflows/ci.yml/badge.svg)
-![Docs](https://github.com/martinvonk/brofopy/actions/workflows/docs.yml/badge.svg)
+![CI](https://github.com/martinvonk/brofopy/actions/workflows/ci.yaml/badge.svg)
+![Docs](https://github.com/martinvonk/brofopy/actions/workflows/docs.yaml/badge.svg)
 
 BroFoPy is a Python package that reads data from the *BronFormat*. The Bronformat is an alternative dataformat for the [Basisregistratie Ondergrond, BRO](https://basisregistratieondergrond.nl/). BroFoPy uses [SciPy](https://github.com/scipy/scipy) to convert the BronFormat into a [Pandas](https://github.com/pandas-dev/pandas) `DataFrame`, and provides a workflow to further convert data into a [HydroPandas](https://github.com/ArtesiaWater/hydropandas) `ObsCollection`.
 
