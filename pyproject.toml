@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "brofopy"
+version = "0.1.0"
+description = "Read Bronformat data with SciPy, convert to Pandas DataFrames and HydroPandas ObsCollections."
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.11"
+dependencies = [
+    "scipy>=1.16.0",
+    "pandas>=2.0",
+    "hydropandas>=0.18.0",
+    "brodata>=0.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "ruff",
+    "ty",
+]
+docs = [
+    "sphinx",
+    "sphinx-rtd-theme",
+    "myst-parser",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+src = ["src"]
+
+[tool.ruff.lint]
+extend-select = ["I", "D"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
