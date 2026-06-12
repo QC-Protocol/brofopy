@@ -20,7 +20,16 @@ NpStructuredItem: TypeAlias = np.void  # Single structured array item
 
 # Type aliases for bronformat entities
 EntityType = Literal[
-    "GMN", "GMW", "GLD", "GAR", "Proces", "IN", "QC", "File", "GIS", "Cache"
+    "GMN",
+    "GMW",
+    "GLD",
+    "GAR",
+    "Proces",
+    "IN",
+    "QC",
+    "File",
+    "GIS",
+    "Cache",
 ]
 SubEntityType = Literal[
     "Adm",
@@ -69,7 +78,9 @@ def _extract_scalar(value: Any) -> NpScalar | None:
     return value
 
 
-def _convert_matlab_datetime(value: int | float | np.number | None) -> pd.Timestamp | Any:
+def _convert_matlab_datetime(
+    value: int | float | np.number | None,
+) -> pd.Timestamp | Any:
     """Convert MATLAB datenum (serial date) to pandas Timestamp.
 
     MATLAB's datenum format counts days since 0000-12-31 (day 0 = 0000-12-31,
@@ -203,12 +214,16 @@ def _parse_measurements(measurements_arr: NpStructuredArray) -> pd.DataFrame:
     """
     if measurements_arr.size == 0:
         if hasattr(measurements_arr.dtype, "names") and measurements_arr.dtype.names:
-            return pd.DataFrame(columns=list(cast(tuple[str, ...], measurements_arr.dtype.names)))
+            return pd.DataFrame(
+                columns=list(cast(tuple[str, ...], measurements_arr.dtype.names))
+            )
         return pd.DataFrame(columns=["DateTime", "RawValue"])
 
     # Dynamically get all field names from the structured array
     if hasattr(measurements_arr.dtype, "names") and measurements_arr.dtype.names:
-        field_names: list[str] = list(cast(tuple[str, ...], measurements_arr.dtype.names))
+        field_names: list[str] = list(
+            cast(tuple[str, ...], measurements_arr.dtype.names)
+        )
     else:
         field_names = ["DateTime", "RawValue"]
 
@@ -293,7 +308,11 @@ def _get_entity_id_broid(
         if adm.size > 0:
             adm_item = adm.flat[0]
             if isinstance(adm_item, np.void):
-                if id_field and adm_item.dtype.names and id_field in adm_item.dtype.names:
+                if (
+                    id_field
+                    and adm_item.dtype.names
+                    and id_field in adm_item.dtype.names
+                ):
                     entity_id = _extract_scalar(adm_item[id_field])
                 if adm_item.dtype.names and "BROID" in adm_item.dtype.names:
                     broid = _extract_scalar(adm_item["BROID"])
@@ -335,29 +354,41 @@ def _parse_entity_array(
         # Process each field of the entity
         if entity.dtype.names:
             for field_name in entity.dtype.names:
-            field_data = entity[field_name]
+                field_data = entity[field_name]
 
-            if isinstance(field_data, np.ndarray) and field_data.size > 0:
-                # Check if this is a structured array
-                if hasattr(field_data.dtype, "names") and field_data.dtype.names:
-                    sub_entity_name: SubEntityType = field_name
+                if isinstance(field_data, np.ndarray) and field_data.size > 0:
+                    # Check if this is a structured array
+                    if hasattr(field_data.dtype, "names") and field_data.dtype.names:
+                        sub_entity_name: SubEntityType = field_name
 
-                    for sub_idx, sub_entity in enumerate(field_data.flat):
-                        # Flatten the sub-entity
-                        flat_data = _flatten_structured_item(sub_entity)
-                        flat_data = _convert_datetime_values(flat_data)
+                        for sub_idx, sub_entity in enumerate(field_data.flat):
+                            # Flatten the sub-entity
+                            flat_data = _flatten_structured_item(sub_entity)
+                            flat_data = _convert_datetime_values(flat_data)
 
+                            metadata_row = _build_metadata_row(
+                                broid,
+                                entity_name,
+                                entity_id,
+                                sub_entity_name,
+                                sub_idx,
+                                **flat_data,
+                            )
+                            metadata_rows.append(metadata_row)
+                    else:
+                        # Simple array field
+                        flat_value = _extract_scalar(field_data)
                         metadata_row = _build_metadata_row(
                             broid,
                             entity_name,
                             entity_id,
-                            sub_entity_name,
-                            sub_idx,
-                            **flat_data,
+                            field_name,
+                            0,
+                            Value=flat_value,
                         )
                         metadata_rows.append(metadata_row)
                 else:
-                    # Simple array field
+                    # Empty or scalar field
                     flat_value = _extract_scalar(field_data)
                     metadata_row = _build_metadata_row(
                         broid,
@@ -368,18 +399,6 @@ def _parse_entity_array(
                         Value=flat_value,
                     )
                     metadata_rows.append(metadata_row)
-            else:
-                # Empty or scalar field
-                flat_value = _extract_scalar(field_data)
-                metadata_row = _build_metadata_row(
-                    broid,
-                    entity_name,
-                    entity_id,
-                    field_name,
-                    0,
-                    Value=flat_value,
-                )
-                metadata_rows.append(metadata_row)
 
     metadata_df = _create_metadata_df(metadata_rows)
     data_df = pd.DataFrame(columns=DEFAULT_COLUMNS_DATA).set_index(["Entity", "BROID"])
@@ -432,25 +451,30 @@ def _parse_entity_with_measurements(
         broid: NpScalar | None
         entity_id, broid = _get_entity_id_broid(entity, id_field)
 
-        for field_name in entity.dtype.names:
-            field_data = entity[field_name]
-            sub_entity_name: SubEntityType = field_name
+        if entity.dtype.names:
+            for field_name in entity.dtype.names:
+                field_data = entity[field_name]
+                sub_entity_name: SubEntityType = field_name
 
-            if isinstance(field_data, np.ndarray) and field_data.size > 0:
-                for sub_idx, sub_entity in enumerate(field_data.flat):
-                    flat_data = _flatten_structured_item(sub_entity)
-                    flat_data = _convert_datetime_values(flat_data)
+                if isinstance(field_data, np.ndarray) and field_data.size > 0:
+                    for sub_idx, sub_entity in enumerate(field_data.flat):
+                        flat_data = _flatten_structured_item(sub_entity)
+                        flat_data = _convert_datetime_values(flat_data)
 
-                    # Check if this sub-entity has Measurements
-                    check_for_measurements = (
-                        measurements_sub_entity is None
-                        and isinstance(sub_entity, np.void)
-                        and "Measurements" in sub_entity.dtype.names
-                    ) or (sub_entity_name == measurements_sub_entity)
+                        # Check if this sub-entity has Measurements
+                        check_for_measurements = (
+                            measurements_sub_entity is None
+                            and isinstance(sub_entity, np.void)
+                            and sub_entity.dtype.names
+                            and "Measurements" in sub_entity.dtype.names
+                        ) or (sub_entity_name == measurements_sub_entity)
 
-                    if check_for_measurements and isinstance(sub_entity, np.void):
-                        if "Measurements" in sub_entity.dtype.names:
-                            measurements_arr = sub_entity["Measurements"]
+                        if check_for_measurements and isinstance(sub_entity, np.void):
+                            if (
+                                sub_entity.dtype.names
+                                and "Measurements" in sub_entity.dtype.names
+                            ):
+                                measurements_arr = sub_entity["Measurements"]
                             if (
                                 isinstance(measurements_arr, np.ndarray)
                                 and measurements_arr.size > 0
