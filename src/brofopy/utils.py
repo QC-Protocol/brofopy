@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import pandas as pd
+from exceptions import BronformatParseError
 
 
 def validate_data(df: pd.DataFrame) -> None:
@@ -24,4 +25,4 @@ def validate_data(df: pd.DataFrame) -> None:
     NotImplementedError
         Until the validation logic is implemented.
     """
-    raise NotImplementedError("validate_data is not yet implemented.")
+    raise BronformatParseError("validate_data is not yet implemented.")
