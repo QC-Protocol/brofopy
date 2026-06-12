@@ -2,7 +2,7 @@
 
 import pytest
 
-from brofopy.brodata_ext import from_brodata
+from brofopy.ext.brodata import from_brodata
 
 
 def test_from_brodata_raises_not_implemented() -> None:

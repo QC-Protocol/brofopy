@@ -2,7 +2,7 @@
 
 import pytest
 
-from brofopy.hydropandas_ext import to_obscollection
+from brofopy.ext.hydropandas import to_obscollection
 
 
 def test_to_obscollection_raises_not_implemented(sample_dataframe) -> None:
