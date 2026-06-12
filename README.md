@@ -17,7 +17,7 @@ maintained by [Trefoil Hydrology](mailto:jos.von.asmuth@3hydro.nl).
 ## Installation
 
 ```bash
-pip install brofopy
+pip install git+https://github.com/martinvonk/brofopy.git
 ```
 
 ### Development install
