@@ -1,6 +1,6 @@
 """brofopy - read Bronformat data and convert to HydroPandas."""
 
-from brofopy.ext.brodata import from_brodata as from_brodata
+from brofopy.ext.bd import from_brodata as from_brodata
 from brofopy.ext.hpd import to_obscollection as to_obscollection
 from brofopy.reader import read_bronformat as read_bronformat
 

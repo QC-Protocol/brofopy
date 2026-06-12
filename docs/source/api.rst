@@ -1,7 +1,7 @@
 API Reference
 =============
 
-reader
+Reader
 ------
 
 .. automodule:: brofopy.reader
@@ -9,31 +9,23 @@ reader
    :undoc-members:
    :show-inheritance:
 
-hydropandas_ext
----------------
+HydroPandas Extension
+---------------------
 
-.. automodule:: brofopy.hydropandas_ext
+.. automodule:: brofopy.ext.hpd
    :members:
    :undoc-members:
    :show-inheritance:
 
-brodata_ext
------------
+BroData Extension
+-----------------
 
-.. automodule:: brofopy.brodata_ext
+.. automodule:: brofopy.ext.bd
    :members:
    :undoc-members:
    :show-inheritance:
 
-utils
------
-
-.. automodule:: brofopy.utils
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-exceptions
+Exceptions
 ----------
 
 .. automodule:: brofopy.exceptions
