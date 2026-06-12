@@ -39,9 +39,7 @@ SubEntityType = Literal[
 DEFAULT_COLUMNS_METADATA: list[str] = [
     "Entity",
     "BROID",
-    "Entity_ID",
     "SubEntity",
-    "SubEntity_Index",
 ]
 DEFAULT_COLUMNS_DATA: list[str] = ["Entity", "BROID", "DateTime", "RawValue"]
 
@@ -251,9 +249,9 @@ def _build_metadata_row(
     return {
         "BROID": broid,
         "Entity": entity_name,
-        "Entity_ID": entity_id,
+        "EntityID": np.nan if entity_id is None else entity_id,
         "SubEntity": sub_entity,
-        "SubEntity_Index": sub_idx,
+        "SubEntityID": sub_idx,
         **extra_fields,
     }
 
@@ -558,8 +556,8 @@ def read_bronformat(
     tuple[pd.DataFrame, pd.DataFrame]
         (metadata_df, data_df) - Two DataFrames:
         - metadata_df: Contains all administrative and configuration data with MultiIndex
-          (Entity, BROID, Entity_ID, SubEntity, SubEntity_Index)
-        - data_df: Contains time series measurements with columns with index (Entity, BROID) and columns (DateTime, RawValue)
+          (Entity, BROID, SubEntity) and columns (EntityID, SubEntityID)
+        - data_df: Contains time series measurements with index (Entity, BROID) and columns (DateTime, RawValue)
 
     Raises
     ------
@@ -790,11 +788,7 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.DEBUG)  # or INFO for less verbose output
     # Try to find the test data file
-    test_path = Path("tests/data/testdata.bron2")
-    if not test_path.exists():
-        test_path = Path.cwd().parent / "tests/data/testdata.bron2"
-    if not test_path.exists():
-        test_path = Path.cwd().parent.parent / "tests/data/testdata.bron2"
+    test_path = Path.cwd().parent.parent / "tests/data/testdata.bron2"
 
     metadata, data = read_bronformat(test_path, backend="scipy")
 
