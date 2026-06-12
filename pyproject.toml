@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "brofopy"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Read Bronformat data with SciPy, convert to Pandas DataFrames and HydroPandas ObsCollections."
 readme = "README.md"
 license = "MIT"
@@ -41,6 +41,9 @@ docs = ["sphinx", "sphinx-rtd-theme", "myst-parser", "ipykernel"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.dynamic]
+version = {attr = "brofopy._version.__version__"}
 
 [tool.ruff]
 src = ["src"]
