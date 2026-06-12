@@ -701,16 +701,15 @@ def parse_bronformat_scipy(d: dict[str, Any]) -> tuple[pd.DataFrame, pd.DataFram
         )
     else:
         metadata_df = pd.concat(all_metadata_dfs)
-        metadata_df = metadata_df.sort_index()
-
         for col in list(metadata_df.columns):
             non_null = metadata_df[col].dropna()
             if non_null.size > 0 and isinstance(non_null.iloc[0], np.ndarray):
                 metadata_df = metadata_df.drop(columns=[col])
+        metadata_df = metadata_df.sort_index()
 
     # Concatenate all data DataFrames
     data_df = (
-        pd.concat(all_data_dfs)
+        pd.concat(all_data_dfs).sort_index()
         if all_data_dfs
         else pd.DataFrame(columns=DEFAULT_COLUMNS_DATA).set_index(["Entity", "BROID"])
     )

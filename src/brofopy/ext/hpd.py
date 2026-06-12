@@ -21,11 +21,12 @@ def to_obscollection(
     data_df : pd.DataFrame
         Data DataFrame produced by :func:`brofopy.reader.read_bronformat`.
         Should have DateTime and RawValue columns with index (Entity, BROID).
+    entity : Literal["GLD", "GAR"]
+        The entity type to convert (e.g., "GLD" for groundwater, "GAR
+        for water quality).
     metadata_df : pd.DataFrame
         Metadata DataFrame produced by :func:`brofopy.reader.read_bronformat`.
         Should have index (Entity, BROID, SubEntity).
-    entity : Literal["GLD", "GAR"], optional
-        Entity type to filter for, by default "GLD" (groundwater level data).
     name : str, optional
         Name for the ObsCollection, by default "".
 
@@ -38,7 +39,7 @@ def to_obscollection(
     --------
     >>> from brofopy.reader import read_bronformat
     >>> metadata, data = read_bronformat("path/to/file.bron2")
-    >>> oc = to_obscollection(data, metadata)
+    >>> oc = to_obscollection(data, metadata, entity="GLD")
     """
     # Create GroundwaterObs object
     if entity == "GLD":
@@ -51,27 +52,29 @@ def to_obscollection(
     if data_df.empty:
         return ObsCollection(name=name)
 
-    # Filter metadata for the specified entity
-    metadata_df = metadata_df.loc[
-        metadata_df.index.get_level_values("Entity") == entity
-    ]
-
-    # Get unique BROIDs that are not GMW
-    bro_ids = data_df.index.get_level_values("BROID").unique()
+    # Filter unique BROIDs for the specified entity
+    bro_ids = (
+        metadata_df.loc[metadata_df.index.get_level_values("Entity") == entity]
+        .index.get_level_values("BROID")
+        .unique()
+    )
 
     obs_list = []
     for bro_id in bro_ids:
-        gmw_id = metadata_df.at[("GLD", bro_id, "Dossier"), "GMWBROID"]
-        tube_no = metadata_df.at[("GLD", bro_id, "Dossier"), "TubeNo"]
+        gmw_id = str(metadata_df.loc[(entity, bro_id, "Dossier"), "GMWBROID"].squeeze())
+        tube_no = float(
+            metadata_df.loc[(entity, bro_id, "Dossier"), "TubeNo"].squeeze()
+        )
 
-        x = metadata_df.at[("GMW", gmw_id, "Well"), "XCoordinate"]
-        y = metadata_df.at[("GMW", gmw_id, "Well"), "YCoordinate"]
-        ground_level = metadata_df.at[("GMW", gmw_id, "Well"), "SurfaceLevel"]
-
+        x = float(metadata_df.loc[("GMW", gmw_id, "Well"), "XCoordinate"].squeeze())
+        y = float(metadata_df.loc[("GMW", gmw_id, "Well"), "YCoordinate"].squeeze())
+        ground_level = float(
+            metadata_df.loc[("GMW", gmw_id, "Well"), "SurfaceLevel"].squeeze()
+        )
         tube_df = metadata_df.loc[("GMW", gmw_id, "Tube")].query(f"TubeNo == {tube_no}")
-        screen_top = tube_df.at[("GMW", gmw_id, "Tube"), "FilterTopLevel"]
-        screen_bottom = tube_df.at[("GMW", gmw_id, "Tube"), "FilterBottomLevel"]
-        tube_top = tube_df.at[("GMW", gmw_id, "Tube"), "TopLevel"]
+        screen_top = float(tube_df.loc[("GMW", gmw_id, "Tube"), "FilterTopLevel"])
+        screen_bottom = float(tube_df.loc[("GMW", gmw_id, "Tube"), "FilterBottomLevel"])
+        tube_top = float(tube_df.loc[("GMW", gmw_id, "Tube"), "TopLevel"])
 
         # Get time series data for this BROID
         ts_data = data_df.loc[(entity, bro_id)]
@@ -86,9 +89,6 @@ def to_obscollection(
             ts_df = pd.DataFrame(columns=["RawValue"])
             ts_df.index.name = "DateTime"
 
-        # Get metadata for this BROID
-        bro_id_metadata = metadata_df.loc[(entity, bro_id), :]
-
         # Extract metadata values
         obs_kwargs = {
             "name": str(bro_id),
@@ -96,7 +96,7 @@ def to_obscollection(
             "y": y,
             "location": str(bro_id),
             "source": "BronFormat",
-            "unit": "m",
+            "unit": "",
             "screen_top": screen_top,
             "screen_bottom": screen_bottom,
             "ground_level": ground_level,
@@ -104,33 +104,6 @@ def to_obscollection(
             "metadata_available": False,
             "tube_nr": str(int(tube_no)),
         }
-
-        # Try to extract coordinates from metadata
-        if "Point" in bro_id_metadata.index.get_level_values("SubEntity"):
-            point_meta = bro_id_metadata.loc[(entity, bro_id, "Point"), :]
-            if not point_meta.empty:
-                if "X" in point_meta.columns:
-                    obs_kwargs["x"] = point_meta["X"].iloc[0]
-                if "Y" in point_meta.columns:
-                    obs_kwargs["y"] = point_meta["Y"].iloc[0]
-
-        # Try to extract tube information
-        if "Tube" in bro_id_metadata.index.get_level_values("SubEntity"):
-            tube_meta = bro_id_metadata.loc[(entity, bro_id, "Tube"), :]
-            if not tube_meta.empty:
-                if "TubeNr" in tube_meta.columns:
-                    obs_kwargs["tube_nr"] = str(int(tube_meta["TubeNr"].iloc[0]))
-                if "ScreenTop" in tube_meta.columns:
-                    obs_kwargs["screen_top"] = tube_meta["ScreenTop"].iloc[0]
-                if "ScreenBottom" in tube_meta.columns:
-                    obs_kwargs["screen_bottom"] = tube_meta["ScreenBottom"].iloc[0]
-
-        # Try to extract ground level
-        if "Well" in bro_id_metadata.index.get_level_values("SubEntity"):
-            well_meta = bro_id_metadata.loc[(entity, bro_id, "Well"), :]
-            if not well_meta.empty:
-                if "GroundLevel" in well_meta.columns:
-                    obs_kwargs["ground_level"] = well_meta["GroundLevel"].iloc[0]
 
         obs = Obs(ts_df, **obs_kwargs)
         obs_list.append(obs)
