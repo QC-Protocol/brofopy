@@ -24,6 +24,7 @@ dependencies = [
     "pandas>=2.0",
     "hydropandas>=0.18.0",
     "brodata>=0.1.0",
+    "h5py>=3.16.0",
 ]
 classifiers = [
     'Programming Language :: Python :: 3 :: Only',
@@ -34,8 +35,9 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest", "pytest-cov", "ruff", "ty", "pre-commit"]
-docs = ["sphinx", "sphinx-rtd-theme", "myst-parser"]
+dev = ["brofopy[docs,tests]", "pre-commit"]
+tests = ["pytest", "pytest-cov", "ruff", "ty"]
+docs = ["sphinx", "sphinx-rtd-theme", "myst-parser", "ipykernel"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
