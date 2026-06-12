@@ -2,7 +2,7 @@
 
 from logging import getLogger
 from pathlib import Path
-from typing import Any, Callable, Literal, TypeAlias
+from typing import Any, Callable, Literal, TypeAlias, cast
 
 import h5py as h5py
 import numpy as np
@@ -69,7 +69,7 @@ def _extract_scalar(value: Any) -> NpScalar | None:
     return value
 
 
-def _convert_matlab_datetime(value: int | float | np.number) -> pd.Timestamp | Any:
+def _convert_matlab_datetime(value: int | float | np.number | None) -> pd.Timestamp | Any:
     """Convert MATLAB datenum (serial date) to pandas Timestamp.
 
     MATLAB's datenum format counts days since 0000-12-31 (day 0 = 0000-12-31,
@@ -78,14 +78,16 @@ def _convert_matlab_datetime(value: int | float | np.number) -> pd.Timestamp | A
 
     Parameters
     ----------
-    value : Any
+    value : int | float | np.number | None
         The MATLAB datetime value to convert.
 
     Returns
     -------
-    Any
+    pd.Timestamp | Any
         pandas Timestamp if value is a MATLAB datetime, otherwise unchanged.
     """
+    if value is None:
+        return None
     MATLAB_DATENUM_REFERENCE = 719529  # MATLAB datenum for 1970-01-01
     if isinstance(value, (int, float, np.number)):
         try:
@@ -127,40 +129,41 @@ def _flatten_structured_item(
             result[prefix] = scalar
         return result
 
-    for field_name in item.dtype.names:
-        field_data = item[field_name]
-        new_prefix = f"{prefix}.{field_name}" if prefix else field_name
+    if item.dtype.names:
+        for field_name in item.dtype.names:
+            field_data = item[field_name]
+            new_prefix = f"{prefix}.{field_name}" if prefix else field_name
 
-        # Check if this field is itself a structured array
-        if isinstance(field_data, np.void):
-            # Single structured item - recurse
-            result.update(
-                _flatten_structured_item(field_data, new_prefix, max_depth - 1)
-            )
-        elif isinstance(field_data, np.ndarray):
-            if field_data.size == 0:
-                result[new_prefix] = None
-            elif field_data.size == 1 and isinstance(field_data.flat[0], np.void):
-                # Single nested structured item
+            # Check if this field is itself a structured array
+            if isinstance(field_data, np.void):
+                # Single structured item - recurse
                 result.update(
-                    _flatten_structured_item(
-                        field_data.flat[0], new_prefix, max_depth - 1
-                    )
+                    _flatten_structured_item(field_data, new_prefix, max_depth - 1)
                 )
-            elif hasattr(field_data.dtype, "names") and field_data.dtype.names:
-                # Array of structured items - flatten first element only to avoid lists
-                if field_data.size > 0:
+            elif isinstance(field_data, np.ndarray):
+                if field_data.size == 0:
+                    result[new_prefix] = None
+                elif field_data.size == 1 and isinstance(field_data.flat[0], np.void):
+                    # Single nested structured item
                     result.update(
                         _flatten_structured_item(
                             field_data.flat[0], new_prefix, max_depth - 1
                         )
                     )
+                elif hasattr(field_data.dtype, "names") and field_data.dtype.names:
+                    # Array of structured items - flatten first element only to avoid lists
+                    if field_data.size > 0:
+                        result.update(
+                            _flatten_structured_item(
+                                field_data.flat[0], new_prefix, max_depth - 1
+                            )
+                        )
+                else:
+                    # Regular numpy array - extract scalar
+                    scalar = _extract_scalar(field_data)
+                    result[new_prefix] = scalar
             else:
-                # Regular numpy array - extract scalar
-                scalar = _extract_scalar(field_data)
-                result[new_prefix] = scalar
-        else:
-            result[new_prefix] = _extract_scalar(field_data)
+                result[new_prefix] = _extract_scalar(field_data)
 
     return result
 
@@ -199,13 +202,13 @@ def _parse_measurements(measurements_arr: NpStructuredArray) -> pd.DataFrame:
         DataFrame with all measurement columns extracted from the structured array.
     """
     if measurements_arr.size == 0:
-        if hasattr(measurements_arr.dtype, "names"):
-            return pd.DataFrame(columns=list(measurements_arr.dtype.names))
+        if hasattr(measurements_arr.dtype, "names") and measurements_arr.dtype.names:
+            return pd.DataFrame(columns=list(cast(tuple[str, ...], measurements_arr.dtype.names)))
         return pd.DataFrame(columns=["DateTime", "RawValue"])
 
     # Dynamically get all field names from the structured array
-    if hasattr(measurements_arr.dtype, "names"):
-        field_names = list(measurements_arr.dtype.names)
+    if hasattr(measurements_arr.dtype, "names") and measurements_arr.dtype.names:
+        field_names: list[str] = list(cast(tuple[str, ...], measurements_arr.dtype.names))
     else:
         field_names = ["DateTime", "RawValue"]
 
@@ -285,14 +288,14 @@ def _get_entity_id_broid(
     """
     entity_id = None
     broid = None
-    if "Adm" in entity.dtype.names:
+    if entity.dtype.names and "Adm" in entity.dtype.names:
         adm = entity["Adm"]
         if adm.size > 0:
             adm_item = adm.flat[0]
             if isinstance(adm_item, np.void):
-                if id_field and id_field in adm_item.dtype.names:
+                if id_field and adm_item.dtype.names and id_field in adm_item.dtype.names:
                     entity_id = _extract_scalar(adm_item[id_field])
-                if "BROID" in adm_item.dtype.names:
+                if adm_item.dtype.names and "BROID" in adm_item.dtype.names:
                     broid = _extract_scalar(adm_item["BROID"])
     return entity_id, broid
 
@@ -330,7 +333,8 @@ def _parse_entity_array(
         entity_id, broid = _get_entity_id_broid(entity, id_field)
 
         # Process each field of the entity
-        for field_name in entity.dtype.names:
+        if entity.dtype.names:
+            for field_name in entity.dtype.names:
             field_data = entity[field_name]
 
             if isinstance(field_data, np.ndarray) and field_data.size > 0:
@@ -760,7 +764,7 @@ def parse_bronformat_scipy(d: dict[str, Any]) -> tuple[pd.DataFrame, pd.DataFram
     return metadata_df, data_df
 
 
-def read_bronformat_h5py(filepath: str | Path) -> pd.DataFrame:
+def read_bronformat_h5py(filepath: str | Path) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Read a Bronformat (*.bron2) file (v7.3+) using h5py and return a DataFrame.
 
     Starting with MATLAB v7.3, .mat files are built on the HDF5 standard.
