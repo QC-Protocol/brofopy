@@ -6,9 +6,11 @@ import sys
 # Make the src/ layout visible to Sphinx autodoc
 sys.path.insert(0, os.path.abspath("../../src"))
 
+from brofopy._version import __version__
+
 project = "brofopy"
 author = "Trefoil Hydrology & Artesia Water"
-release = "0.1.0"
+release = __version__
 
 extensions = [
     "sphinx.ext.autodoc",
