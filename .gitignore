@@ -60,6 +60,7 @@ venv.bak/
 .idea/
 *.swp
 *.swo
+*.code-workspace
 
 # Sphinx documentation
 docs/_build/

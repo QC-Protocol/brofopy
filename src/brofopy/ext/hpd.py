@@ -87,9 +87,7 @@ def to_obscollection(
             ts_df.index.name = "DateTime"
 
         # Get metadata for this BROID
-        bro_id_metadata = metadata_df.loc[
-            (entity, bro_id), :
-        ]
+        bro_id_metadata = metadata_df.loc[(entity, bro_id), :]
 
         # Extract metadata values
         obs_kwargs = {
@@ -109,9 +107,7 @@ def to_obscollection(
 
         # Try to extract coordinates from metadata
         if "Point" in bro_id_metadata.index.get_level_values("SubEntity"):
-            point_meta = bro_id_metadata.loc[
-                (entity, bro_id, "Point"), :
-            ]
+            point_meta = bro_id_metadata.loc[(entity, bro_id, "Point"), :]
             if not point_meta.empty:
                 if "X" in point_meta.columns:
                     obs_kwargs["x"] = point_meta["X"].iloc[0]
@@ -120,9 +116,7 @@ def to_obscollection(
 
         # Try to extract tube information
         if "Tube" in bro_id_metadata.index.get_level_values("SubEntity"):
-            tube_meta = bro_id_metadata.loc[
-                (entity, bro_id, "Tube"), :
-            ]
+            tube_meta = bro_id_metadata.loc[(entity, bro_id, "Tube"), :]
             if not tube_meta.empty:
                 if "TubeNr" in tube_meta.columns:
                     obs_kwargs["tube_nr"] = str(int(tube_meta["TubeNr"].iloc[0]))
@@ -133,9 +127,7 @@ def to_obscollection(
 
         # Try to extract ground level
         if "Well" in bro_id_metadata.index.get_level_values("SubEntity"):
-            well_meta = bro_id_metadata.loc[
-                (entity, bro_id, "Well"), :
-            ]
+            well_meta = bro_id_metadata.loc[(entity, bro_id, "Well"), :]
             if not well_meta.empty:
                 if "GroundLevel" in well_meta.columns:
                     obs_kwargs["ground_level"] = well_meta["GroundLevel"].iloc[0]
