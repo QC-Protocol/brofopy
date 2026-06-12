@@ -1,11 +1,8 @@
 """brofopy - read Bronformat data and convert to HydroPandas."""
 
-from brofopy.brodata_ext import from_brodata
-from brofopy.hydropandas_ext import to_obscollection
-from brofopy.reader import read_bronformat
+from brofopy.brodata_ext import from_brodata as from_brodata
+from brofopy.hydropandas_ext import to_obscollection as to_obscollection
+from brofopy.reader import read_bronformat as read_bronformat
 
-__all__ = [
-    "read_bronformat",
-    "to_obscollection",
-    "from_brodata",
-]
+from ._version import __version__ as __version__
+from ._version import show_versions as show_versions
