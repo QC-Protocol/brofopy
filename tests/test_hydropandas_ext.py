@@ -20,4 +20,3 @@ if __name__ == "__main__":
     data_path = Path.cwd() / "data/testdata.bron2"
     metadata_df, data_df = read_bronformat(data_path)
     oc = to_obscollection(data_df, metadata_df, entity="GLD", name="Test ObsCollection")
-

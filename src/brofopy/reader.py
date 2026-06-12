@@ -190,26 +190,36 @@ def _parse_measurements(measurements_arr: NpStructuredArray) -> pd.DataFrame:
     Parameters
     ----------
     measurements_arr : np.ndarray
-        Structured array with DateTime and RawValue fields.
+        Structured array with measurement fields (typically DateTime, RawValue,
+        and potentially others like QC flags, observation IDs, etc.).
 
     Returns
     -------
     pd.DataFrame
-        DataFrame with DateTime and RawValue columns.
+        DataFrame with all measurement columns extracted from the structured array.
     """
     if measurements_arr.size == 0:
+        if hasattr(measurements_arr.dtype, "names"):
+            return pd.DataFrame(columns=list(measurements_arr.dtype.names))
         return pd.DataFrame(columns=["DateTime", "RawValue"])
 
-    datetimes = []
-    rawvalues = []
+    # Dynamically get all field names from the structured array
+    if hasattr(measurements_arr.dtype, "names"):
+        field_names = list(measurements_arr.dtype.names)
+    else:
+        field_names = ["DateTime", "RawValue"]
+
+    result = {name: [] for name in field_names}
 
     for meas in measurements_arr.flat:
-        dt_scalar = _extract_scalar(meas["DateTime"])
-        rv_scalar = _extract_scalar(meas["RawValue"])
-        datetimes.append(_convert_matlab_datetime(dt_scalar))
-        rawvalues.append(rv_scalar)
+        for field_name in field_names:
+            value = _extract_scalar(meas[field_name])
+            # Convert datetime-like fields
+            if "DateTime" in field_name or "Date" in field_name or "Time" in field_name:
+                value = _convert_matlab_datetime(value)
+            result[field_name].append(value)
 
-    return pd.DataFrame({"DateTime": datetimes, "RawValue": rawvalues})
+    return pd.DataFrame(result)
 
 
 def _create_empty_result_dfs() -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -377,42 +387,64 @@ def _parse_gmw(gmw_arr: NpStructuredArray) -> tuple[pd.DataFrame, pd.DataFrame]:
     return _parse_entity_array(gmw_arr, "GMW", "GMWID")
 
 
-def _parse_gld(gld_arr: NpStructuredArray) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Parse GLD (Groundwater Level Data) array with special handling for Measurements.
+def _parse_entity_with_measurements(
+    entity_arr: NpStructuredArray,
+    entity_name: EntityType,
+    id_field: str | None,
+    measurements_sub_entity: SubEntityType | None = None,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Parse entity array with special handling for Measurements sub-entities.
+
+    This is a shared function for parsing entities like GLD and GAR that contain
+    Measurements which should be extracted into the data DataFrame.
+
+    Parameters
+    ----------
+    entity_arr : np.ndarray
+        The structured array to parse.
+    entity_name : str
+        Name of the entity (e.g., 'GLD', 'GAR').
+    id_field : str | None
+        Name of the ID field in the entity's Adm sub-structure.
+    measurements_sub_entity : str | None
+        If specified, only check this sub-entity for Measurements.
+        If None, check all sub-entities.
 
     Returns
     -------
     tuple[pd.DataFrame, pd.DataFrame]
-        (metadata_df, data_df) - metadata and time series measurements DataFrames.
+        (metadata_df, data_df) - metadata and measurements DataFrames.
     """
-    logger.debug(f"Parsing {gld_arr.size} GLD items")
+    logger.debug(f"Parsing {entity_arr.size} {entity_name} items")
     metadata_rows: list[dict[str, Any]] = []
     data_rows: list[dict[str, Any]] = []
 
-    if gld_arr.size == 0:
-        logger.debug("  GLD: empty array")
+    if entity_arr.size == 0:
+        logger.debug(f"  {entity_name}: empty array")
         return _create_empty_result_dfs()
 
-    for gld in gld_arr.flat:
-        # Get GLDID and BROID from Adm
-        gld_id: NpScalar | None
+    for entity in entity_arr.flat:
+        entity_id: NpScalar | None
         broid: NpScalar | None
-        gld_id, broid = _get_entity_id_broid(gld, "GLDID")
+        entity_id, broid = _get_entity_id_broid(entity, id_field)
 
-        # Process each field
-        for field_name in gld.dtype.names:
-            field_data = gld[field_name]
+        for field_name in entity.dtype.names:
+            field_data = entity[field_name]
             sub_entity_name: SubEntityType = field_name
 
             if isinstance(field_data, np.ndarray) and field_data.size > 0:
                 for sub_idx, sub_entity in enumerate(field_data.flat):
-                    # Don't flatten yet - check for Measurements first
                     flat_data = _flatten_structured_item(sub_entity)
                     flat_data = _convert_datetime_values(flat_data)
 
-                    # Special handling for Source sub-entity with Measurements
-                    # Check if the raw sub_entity has a Measurements field that is an array
-                    if sub_entity_name == "Source" and isinstance(sub_entity, np.void):
+                    # Check if this sub-entity has Measurements
+                    check_for_measurements = (
+                        measurements_sub_entity is None
+                        and isinstance(sub_entity, np.void)
+                        and "Measurements" in sub_entity.dtype.names
+                    ) or (sub_entity_name == measurements_sub_entity)
+
+                    if check_for_measurements and isinstance(sub_entity, np.void):
                         if "Measurements" in sub_entity.dtype.names:
                             measurements_arr = sub_entity["Measurements"]
                             if (
@@ -420,38 +452,41 @@ def _parse_gld(gld_arr: NpStructuredArray) -> tuple[pd.DataFrame, pd.DataFrame]:
                                 and measurements_arr.size > 0
                             ):
                                 logger.debug(
-                                    f"  Found {measurements_arr.size} measurements in Source"
+                                    f"  Found {measurements_arr.size} measurements in {sub_entity_name}"
                                 )
-                                # Parse measurements using helper
                                 meas_df = _parse_measurements(measurements_arr)
                                 for _, row in meas_df.iterrows():
-                                    data_rows.append(
-                                        {
-                                            "Entity": "GLD",
-                                            "BROID": broid,
-                                            "DateTime": row["DateTime"],
-                                            "RawValue": row["RawValue"],
-                                        }
-                                    )
+                                    data_row = {"Entity": entity_name, "BROID": broid}
+                                    for col in meas_df.columns:
+                                        data_row[col] = row[col]
+                                    data_rows.append(data_row)
                                 logger.debug(f"  Added {len(meas_df)} measurement rows")
 
-                    # Add the metadata row (without Measurements to avoid duplication)
-                    # Remove Measurements fields from flat_data for metadata row
-                    flat_data_metadata = {
-                        k: v
-                        for k, v in flat_data.items()
-                        if not k.startswith("Measurements.")
-                        and not k.startswith("DateTime")
-                        and not k.startswith("RawValue")
-                    }
+                                flat_data_metadata = {
+                                    k: v
+                                    for k, v in flat_data.items()
+                                    if not k.startswith("Measurements.")
+                                    and not k.startswith("DateTime")
+                                    and not k.startswith("RawValue")
+                                }
+                                metadata_row = _build_metadata_row(
+                                    broid,
+                                    entity_name,
+                                    entity_id,
+                                    sub_entity_name,
+                                    sub_idx,
+                                    **flat_data_metadata,
+                                )
+                                metadata_rows.append(metadata_row)
+                                continue
 
                     metadata_row = _build_metadata_row(
                         broid,
-                        "GLD",
-                        gld_id,
+                        entity_name,
+                        entity_id,
                         sub_entity_name,
                         sub_idx,
-                        **flat_data_metadata,
+                        **flat_data,
                     )
                     metadata_rows.append(metadata_row)
 
@@ -460,14 +495,19 @@ def _parse_gld(gld_arr: NpStructuredArray) -> tuple[pd.DataFrame, pd.DataFrame]:
     return metadata_df, data_df
 
 
+def _parse_gld(gld_arr: NpStructuredArray) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Parse GLD (Groundwater Level Data) array with special handling for Measurements."""
+    return _parse_entity_with_measurements(gld_arr, "GLD", "GLDID", "Source")
+
+
 def _parse_gmn(gmn_arr: NpStructuredArray) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Parse GMN (Groundwater Monitoring Network) array."""
     return _parse_entity_array(gmn_arr, "GMN", "GMNID")
 
 
 def _parse_gar(gar_arr: NpStructuredArray) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Parse GAR (Groundwater Analysis Results) array."""
-    return _parse_entity_array(gar_arr, "GAR")
+    """Parse GAR (Groundwater Analysis Results) array with special handling for Measurements."""
+    return _parse_entity_with_measurements(gar_arr, "GAR", "GARID")
 
 
 def _parse_proces(proces_arr: NpStructuredArray) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -786,10 +826,3 @@ if __name__ == "__main__":
     test_path = Path.cwd().parent.parent / "tests/data/testdata.bron2"
 
     metadata, data = read_bronformat(test_path, backend="scipy")
-
-    # print("=== METADATA ===")
-    # print(metadata)
-    # print()
-    # print("=== DATA ===")
-    # print(data.head())
-    # print(f"Total measurements: {len(data)}")
