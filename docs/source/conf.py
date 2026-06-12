@@ -7,7 +7,7 @@ import sys
 sys.path.insert(0, os.path.abspath("../../src"))
 
 project = "brofopy"
-author = "martinvonk"
+author = "Trefoil Hydrology & Artesia Water"
 release = "0.1.0"
 
 extensions = [
