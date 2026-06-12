@@ -703,10 +703,6 @@ def parse_bronformat_scipy(d: dict[str, Any]) -> tuple[pd.DataFrame, pd.DataFram
         metadata_df = pd.concat(all_metadata_dfs)
         metadata_df = metadata_df.sort_index()
 
-        # Clean up metadata: drop columns with mostly null values or unflattened arrays
-        threshold = len(metadata_df) * 0.1
-        metadata_df = metadata_df.dropna(axis=1, thresh=threshold)
-
         for col in list(metadata_df.columns):
             non_null = metadata_df[col].dropna()
             if non_null.size > 0 and isinstance(non_null.iloc[0], np.ndarray):
