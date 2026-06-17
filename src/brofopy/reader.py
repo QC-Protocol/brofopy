@@ -707,6 +707,56 @@ def read_bronformat_scipy(filepath: str | Path) -> tuple[pd.DataFrame, pd.DataFr
     return parse_bronformat_scipy(io)
 
 
+def _get_entity_parsers() -> dict[
+    EntityType, Callable[[NpStructuredArray], tuple[pd.DataFrame, pd.DataFrame]]
+]:
+    """Get the dictionary of entity parsers."""
+    return {
+        "GMN": _parse_gmn,
+        "GMW": _parse_gmw,
+        "GLD": _parse_gld,
+        "GAR": _parse_gar,
+        "Proces": _parse_proces,
+        "IN": _parse_in,
+        "QC": _parse_qc,
+        "File": _parse_file,
+        "GIS": _parse_gis,
+        "Cache": _parse_cache,
+    }
+
+
+def _concatenate_results(
+    all_metadata_dfs: list[pd.DataFrame],
+    all_data_dfs: list[pd.DataFrame],
+    log_prefix: str = "Parsing",
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Concatenate all metadata and data DataFrames into final results."""
+    # Concatenate all metadata DataFrames
+    if not all_metadata_dfs:
+        metadata_df = pd.DataFrame(columns=DEFAULT_COLUMNS_METADATA).set_index(
+            DEFAULT_COLUMNS_METADATA
+        )
+    else:
+        metadata_df = pd.concat(all_metadata_dfs)
+        for col in list(metadata_df.columns):
+            non_null = metadata_df[col].dropna()
+            if non_null.size > 0 and isinstance(non_null.iloc[0], np.ndarray):
+                metadata_df = metadata_df.drop(columns=[col])
+        metadata_df = metadata_df.sort_index()
+
+    # Concatenate all data DataFrames
+    data_df = (
+        pd.concat(all_data_dfs).sort_index()
+        if all_data_dfs
+        else pd.DataFrame(columns=DEFAULT_COLUMNS_DATA).set_index(["Entity", "BROID"])
+    )
+
+    logger.info(
+        f"{log_prefix} complete: {len(metadata_df)} metadata rows, {len(data_df)} data rows"
+    )
+    return metadata_df, data_df
+
+
 def parse_bronformat_scipy(d: dict[str, Any]) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Parse the dictionary loaded from a < v7.3 Bronformat file into DataFrames.
 
@@ -729,24 +779,9 @@ def parse_bronformat_scipy(d: dict[str, Any]) -> tuple[pd.DataFrame, pd.DataFram
         - metadata_df: Contains all administrative and configuration data with MultiIndex
         - data_df: Contains time series measurements (DateTime, RawValue, BROID, ObservationID)
     """
-    # Parse each entity type separately
     all_metadata_dfs = []
     all_data_dfs = []
-
-    entity_parsers: dict[
-        EntityType, Callable[[NpStructuredArray], tuple[pd.DataFrame, pd.DataFrame]]
-    ] = {
-        "GMN": _parse_gmn,
-        "GMW": _parse_gmw,
-        "GLD": _parse_gld,
-        "GAR": _parse_gar,
-        "Proces": _parse_proces,
-        "IN": _parse_in,
-        "QC": _parse_qc,
-        "File": _parse_file,
-        "GIS": _parse_gis,
-        "Cache": _parse_cache,
-    }
+    entity_parsers = _get_entity_parsers()
 
     # Log which entities are present in the file
     available_entities = [k for k in entity_parsers.keys() if k in d]
@@ -774,50 +809,98 @@ def parse_bronformat_scipy(d: dict[str, Any]) -> tuple[pd.DataFrame, pd.DataFram
                     else:
                         logger.debug(f"  {entity_name}: empty data")
                 except Exception as e:
-                    # Log error but continue with other entities
                     logger.error(f"Failed to parse {entity_name}: {e}")
-                    import warnings
 
-                    warnings.warn(f"Failed to parse {entity_name}: {e}")
-
-    # Concatenate all metadata DataFrames
-    if not all_metadata_dfs:
-        metadata_df = pd.DataFrame(columns=DEFAULT_COLUMNS_METADATA).set_index(
-            DEFAULT_COLUMNS_METADATA
-        )
-    else:
-        metadata_df = pd.concat(all_metadata_dfs)
-        for col in list(metadata_df.columns):
-            non_null = metadata_df[col].dropna()
-            if non_null.size > 0 and isinstance(non_null.iloc[0], np.ndarray):
-                metadata_df = metadata_df.drop(columns=[col])
-        metadata_df = metadata_df.sort_index()
-
-    # Concatenate all data DataFrames
-    data_df = (
-        pd.concat(all_data_dfs).sort_index()
-        if all_data_dfs
-        else pd.DataFrame(columns=DEFAULT_COLUMNS_DATA).set_index(["Entity", "BROID"])
-    )
-
-    logger.info(
-        f"Parsing complete: {len(metadata_df)} metadata rows, {len(data_df)} data rows"
-    )
-    return metadata_df, data_df
+    return _concatenate_results(all_metadata_dfs, all_data_dfs, "Parsing")
 
 
-def _extract_string_from_uint16_dataset(dataset: h5py.Dataset) -> str | None:
-    """Extract a string from a uint16 HDF5 dataset (MATLAB character array)."""
+def _extract_measurements_from_h5py(
+    dataset: h5py.Dataset, h5file: h5py.File
+) -> np.ndarray:
+    """Extract Measurements from HDF5 dataset with nested references.
+
+    In HDF5 Bronformat files, Measurements are stored as:
+    - A dataset with shape (1, N) containing references to measurement groups
+    - Each measurement group has DateTime and RawValue datasets with shape (1, M)
+      containing references to the actual numeric arrays
+    - We need to flatten this to a structured array with N*M measurements
+
+    Parameters
+    ----------
+    dataset : h5py.Dataset
+        The Measurements dataset to extract from.
+    h5file : h5py.File
+        The HDF5 file object.
+
+    Returns
+    -------
+    np.ndarray
+        Structured array with DateTime and RawValue fields, one element per measurement.
+    """
     data = dataset[()]
-    if data.size == 0:
-        return None
-    # Convert uint16 codes to characters
-    chars = data.flatten().tolist()
-    # Filter out null characters and convert to string
-    chars = [chr(c) for c in chars if c > 0]
-    if not chars:
-        return None
-    return "".join(chars)
+
+    # Collect all measurements
+    all_dt_values = []
+    all_rv_values = []
+
+    # Iterate over all references in the dataset
+    for ref in data.flat:
+        if not isinstance(ref, h5py.h5r.Reference):
+            continue
+
+        # Dereference to get the measurement group
+        meas_group = h5file[ref]
+        if not isinstance(meas_group, h5py.Group):
+            continue
+
+        # Get DateTime dataset
+        if "DateTime" in meas_group:
+            dt_dataset = meas_group["DateTime"]
+            dt_data = dt_dataset[()]
+
+            # Dereference DateTime values
+            for dt_ref in dt_data.flat:
+                if isinstance(dt_ref, h5py.h5r.Reference):
+                    dt_obj = h5file[dt_ref]
+                    if isinstance(dt_obj, h5py.Dataset):
+                        dt_array = dt_obj[()]
+                        # Flatten and add all DateTime values
+                        all_dt_values.extend(dt_array.flatten().tolist())
+                elif isinstance(dt_ref, (int, float, np.number)):
+                    all_dt_values.append(dt_ref)
+
+        # Get RawValue dataset
+        if "RawValue" in meas_group:
+            rv_dataset = meas_group["RawValue"]
+            rv_data = rv_dataset[()]
+
+            # Dereference RawValue values
+            for rv_ref in rv_data.flat:
+                if isinstance(rv_ref, h5py.h5r.Reference):
+                    rv_obj = h5file[rv_ref]
+                    if isinstance(rv_obj, h5py.Dataset):
+                        rv_array = rv_obj[()]
+                        # Flatten and add all RawValue values
+                        all_rv_values.extend(rv_array.flatten().tolist())
+                elif isinstance(rv_ref, (int, float, np.number)):
+                    all_rv_values.append(rv_ref)
+
+    # Create structured array with one measurement per element
+    if len(all_dt_values) == 0:
+        return np.zeros(0, dtype=[("DateTime", object), ("RawValue", object)])
+
+    # Ensure we have the same number of DateTime and RawValue elements
+    min_length = min(len(all_dt_values), len(all_rv_values))
+    all_dt_values = all_dt_values[:min_length]
+    all_rv_values = all_rv_values[:min_length]
+
+    # Create structured array
+    arr = np.zeros(min_length, dtype=[("DateTime", object), ("RawValue", object)])
+    for i in range(min_length):
+        arr[i]["DateTime"] = all_dt_values[i]
+        arr[i]["RawValue"] = all_rv_values[i]
+
+    return arr
 
 
 def _extract_h5py_dataset(
@@ -828,13 +911,43 @@ def _extract_h5py_dataset(
 
     # Handle character arrays - MATLAB stores strings as uint16 char codes
     if dataset.dtype == np.uint16:
-        return _extract_string_from_uint16_dataset(dataset)
+        # Convert uint16 codes to characters
+        chars = data.flatten().tolist()
+        chars = [chr(c) for c in chars if c > 0]
+        return "".join(chars) if chars else None
+
+    # Handle other integer types that might be empty/zero character arrays
+    # This can happen with malformed data where BROID is stored as uint64 [0, 0]
+    if dataset.dtype in (np.uint8, np.uint32, np.uint64, np.int16, np.int32, np.int64):
+        # If all values are zero, treat as empty string
+        if np.all(data == 0):
+            return None
+        # Otherwise, try to interpret as character codes if values are valid
+        try:
+            chars = data.flatten().tolist()
+            chars = [chr(c) for c in chars if c > 0]
+            return "".join(chars) if chars else None
+        except (ValueError, TypeError):
+            # Not valid character codes, return as-is
+            pass
 
     # Handle object dtype datasets that might contain references
     if dataset.dtype == object and h5file is not None and data.size > 0:
         # Check if it contains references
         first = data.flat[0]
         if isinstance(first, h5py.h5r.Reference):
+            # Check if this is a Measurements dataset (special handling needed)
+            first_obj = h5file[first]
+            is_measurements = (
+                isinstance(first_obj, h5py.Group)
+                and "DateTime" in first_obj
+                and "RawValue" in first_obj
+            )
+
+            if is_measurements:
+                # Special handling for Measurements: flatten the nested structure
+                return _extract_measurements_from_h5py(dataset, h5file)
+
             # This is a reference array - dereference all while preserving shape
             dereferenced = np.empty(data.shape, dtype=object)
             for idx in np.ndindex(data.shape):
@@ -901,6 +1014,41 @@ def _h5py_reference_to_dict(
         # Don't recursively dereference datasets - just extract the data
         return _extract_h5py_dataset(obj, h5file)
     return obj
+
+
+def _extract_sub_entity_value(
+    sub_obj: h5py.Dataset | h5py.Group,
+    indices: tuple[int, ...],
+    h5file: h5py.File,
+) -> Any:
+    """Extract a value from a sub-entity at the given indices.
+
+    Handles both Dataset and Group sub-entities, with proper dereferencing
+    of HDF5 references.
+    """
+    if isinstance(sub_obj, h5py.Dataset):
+        if sub_obj.dtype == object:
+            # This is a reference array - get the reference at indices
+            data = sub_obj[()]
+            if len(sub_obj.shape) == 2:
+                # For 2D, use indices directly
+                ref = data[indices] if len(indices) == 2 else data[indices[0]]
+            else:
+                # For 1D, use first index
+                ref = data[indices[0]]
+
+            if isinstance(ref, h5py.h5r.Reference):
+                deref_data = _h5py_reference_to_dict(ref, h5file)
+                return _dict_to_structured_array(deref_data)
+            return ref
+        else:
+            # Non-object dataset - read directly
+            return _extract_h5py_dataset(sub_obj, h5file)
+    elif isinstance(sub_obj, h5py.Group):
+        # Sub-entity is a group - convert to dict then structured array
+        dict_data = _h5py_group_to_dict(sub_obj, h5file)
+        return _dict_to_structured_array(dict_data)
+    return None
 
 
 def _extract_entity_data_from_h5py(
@@ -982,36 +1130,9 @@ def _extract_entity_data_from_h5py(
                 for i in range(n_elements):
                     for sub_name in sub_names:
                         sub_obj = entity_obj[sub_name]
-                        if isinstance(sub_obj, h5py.Dataset):
-                            if sub_obj.dtype == object:
-                                # This is a reference array
-                                data = sub_obj[()]
-                                if len(sub_obj.shape) == 2:
-                                    # For shape (1, 25), we want data[0, i]
-                                    ref = (
-                                        data[0, i]
-                                        if i < sub_obj.shape[1]
-                                        else data.flat[0]
-                                    )
-                                else:
-                                    ref = data[i] if i < len(data) else data.flat[0]
-
-                                if isinstance(ref, h5py.h5r.Reference):
-                                    deref_data = _h5py_reference_to_dict(ref, h5file)
-                                    arr[i][sub_name] = _dict_to_structured_array(
-                                        deref_data
-                                    )
-                                else:
-                                    arr[i][sub_name] = ref
-                            else:
-                                # Non-object dataset - read directly
-                                arr[i][sub_name] = _extract_h5py_dataset(
-                                    sub_obj, h5file
-                                )
-                        elif isinstance(sub_obj, h5py.Group):
-                            # Sub-entity is a group - convert to dict then structured array
-                            dict_data = _h5py_group_to_dict(sub_obj, h5file)
-                            arr[i][sub_name] = _dict_to_structured_array(dict_data)
+                        arr[i][sub_name] = _extract_sub_entity_value(
+                            sub_obj, (0, i) if len(sub_obj.shape) == 2 else (i,), h5file
+                        )
             else:
                 # For entities with 2D layout
                 arr = np.zeros((n_elements, n_cols), dtype=dtype_list)
@@ -1019,39 +1140,9 @@ def _extract_entity_data_from_h5py(
                     for j in range(n_cols):
                         for sub_name in sub_names:
                             sub_obj = entity_obj[sub_name]
-                            if isinstance(sub_obj, h5py.Dataset):
-                                if sub_obj.dtype == object:
-                                    # This is a reference array
-                                    data = sub_obj[()]
-                                    if len(sub_obj.shape) == 2:
-                                        ref = (
-                                            data[i, j]
-                                            if j < sub_obj.shape[1]
-                                            else data[i, 0]
-                                        )
-                                    else:
-                                        ref = data[i] if i < len(data) else data[0]
-
-                                    if isinstance(ref, h5py.h5r.Reference):
-                                        deref_data = _h5py_reference_to_dict(
-                                            ref, h5file
-                                        )
-                                        arr[i, j][sub_name] = _dict_to_structured_array(
-                                            deref_data
-                                        )
-                                    else:
-                                        arr[i, j][sub_name] = ref
-                                else:
-                                    # Non-object dataset - read directly
-                                    arr[i, j][sub_name] = _extract_h5py_dataset(
-                                        sub_obj, h5file
-                                    )
-                            elif isinstance(sub_obj, h5py.Group):
-                                # Sub-entity is a group - convert to dict then structured array
-                                dict_data = _h5py_group_to_dict(sub_obj, h5file)
-                                arr[i, j][sub_name] = _dict_to_structured_array(
-                                    dict_data
-                                )
+                            arr[i, j][sub_name] = _extract_sub_entity_value(
+                                sub_obj, (i, j), h5file
+                            )
 
             return arr
         else:
@@ -1159,21 +1250,7 @@ def parse_bronformat_h5py(h5file: h5py.File) -> tuple[pd.DataFrame, pd.DataFrame
     """
     logger.debug(f"Parsing HDF5 file, top-level keys: {list(h5file.keys())}")
 
-    # Extract all entities from HDF5 file
-    entity_parsers: dict[
-        EntityType, Callable[[NpStructuredArray], tuple[pd.DataFrame, pd.DataFrame]]
-    ] = {
-        "GMN": _parse_gmn,
-        "GMW": _parse_gmw,
-        "GLD": _parse_gld,
-        "GAR": _parse_gar,
-        "Proces": _parse_proces,
-        "IN": _parse_in,
-        "QC": _parse_qc,
-        "File": _parse_file,
-        "GIS": _parse_gis,
-        "Cache": _parse_cache,
-    }
+    entity_parsers = _get_entity_parsers()
 
     # Parse each entity type separately
     all_metadata_dfs = []
@@ -1203,34 +1280,8 @@ def parse_bronformat_h5py(h5file: h5py.File) -> tuple[pd.DataFrame, pd.DataFrame
                 except Exception as e:
                     # Log error but continue with other entities
                     logger.error(f"Failed to parse {entity_name}: {e}")
-                    import warnings
 
-                    warnings.warn(f"Failed to parse {entity_name}: {e}")
-
-    # Concatenate all metadata DataFrames
-    if not all_metadata_dfs:
-        metadata_df = pd.DataFrame(columns=DEFAULT_COLUMNS_METADATA).set_index(
-            DEFAULT_COLUMNS_METADATA
-        )
-    else:
-        metadata_df = pd.concat(all_metadata_dfs)
-        for col in list(metadata_df.columns):
-            non_null = metadata_df[col].dropna()
-            if non_null.size > 0 and isinstance(non_null.iloc[0], np.ndarray):
-                metadata_df = metadata_df.drop(columns=[col])
-        metadata_df = metadata_df.sort_index()
-
-    # Concatenate all data DataFrames
-    data_df = (
-        pd.concat(all_data_dfs).sort_index()
-        if all_data_dfs
-        else pd.DataFrame(columns=DEFAULT_COLUMNS_DATA).set_index(["Entity", "BROID"])
-    )
-
-    logger.info(
-        f"HDF5 parsing complete: {len(metadata_df)} metadata rows, {len(data_df)} data rows"
-    )
-    return metadata_df, data_df
+    return _concatenate_results(all_metadata_dfs, all_data_dfs, "HDF5 parsing")
 
 
 if __name__ == "__main__":
