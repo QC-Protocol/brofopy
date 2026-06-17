@@ -710,7 +710,11 @@ def read_bronformat_scipy(filepath: str | Path) -> tuple[pd.DataFrame, pd.DataFr
 def _get_entity_parsers() -> dict[
     EntityType, Callable[[NpStructuredArray], tuple[pd.DataFrame, pd.DataFrame]]
 ]:
-    """Get the dictionary of entity parsers."""
+    """Get the dictionary of entity parsers.
+
+    These parsers are shared between both scipy and h5py backends since they
+    work on numpy structured arrays regardless of the source.
+    """
     return {
         "GMN": _parse_gmn,
         "GMW": _parse_gmw,
@@ -723,6 +727,67 @@ def _get_entity_parsers() -> dict[
         "GIS": _parse_gis,
         "Cache": _parse_cache,
     }
+
+
+def _parse_bronformat_common(
+    entity_data: dict[str, Any],
+    entity_parsers: dict[
+        EntityType, Callable[[NpStructuredArray], tuple[pd.DataFrame, pd.DataFrame]]
+    ],
+    log_prefix: str = "Parsing",
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Shared parsing by both scipy and h5py backends.
+
+    This function takes a dictionary of entity data (where keys are entity names
+    and values are numpy structured arrays) and parses them using the provided
+    entity parsers. This allows both backends to share the same parsing logic.
+
+    Parameters
+    ----------
+    entity_data : dict[str, Any]
+        Dictionary mapping entity names to their structured array data.
+    entity_parsers : dict[EntityType, Callable]
+        Dictionary of entity parser functions.
+    log_prefix : str
+        Prefix for log messages (e.g., "Parsing" or "HDF5 parsing").
+
+    Returns
+    -------
+    tuple[pd.DataFrame, pd.DataFrame]
+        (metadata_df, data_df) - Parsed metadata and data DataFrames.
+    """
+    all_metadata_dfs = []
+    all_data_dfs = []
+
+    # Log which entities are present in the file
+    available_entities = [k for k in entity_parsers.keys() if k in entity_data]
+    missing_entities = [k for k in entity_parsers.keys() if k not in entity_data]
+    logger.info(f"Found entities: {available_entities}")
+    logger.debug(f"Missing entities: {missing_entities}")
+
+    for entity_name, parser in entity_parsers.items():
+        if entity_name in entity_data:
+            entity_arr = entity_data[entity_name]
+            logger.debug(f"Parsing {entity_name} with {len(entity_arr)} items")
+            if isinstance(entity_arr, np.ndarray):
+                try:
+                    metadata_df, data_df = parser(entity_arr)
+                    if not metadata_df.empty:
+                        logger.debug(
+                            f"  {entity_name}: {len(metadata_df)} metadata rows"
+                        )
+                        all_metadata_dfs.append(metadata_df)
+                    else:
+                        logger.debug(f"  {entity_name}: empty metadata")
+                    if not data_df.empty:
+                        logger.debug(f"  {entity_name}: {len(data_df)} data rows")
+                        all_data_dfs.append(data_df)
+                    else:
+                        logger.debug(f"  {entity_name}: empty data")
+                except Exception as e:
+                    logger.error(f"Failed to parse {entity_name}: {e}")
+
+    return _concatenate_results(all_metadata_dfs, all_data_dfs, log_prefix)
 
 
 def _concatenate_results(
@@ -767,6 +832,9 @@ def parse_bronformat_scipy(d: dict[str, Any]) -> tuple[pd.DataFrame, pd.DataFram
     However, extracting the relevant information from the nested dictionary
     into a structured DataFrame requires custom parsing logic.
 
+    This function now uses the shared _parse_bronformat_common function to
+    maximize code reuse with the h5py backend.
+
     Parameters
     ----------
     d : dict
@@ -779,39 +847,8 @@ def parse_bronformat_scipy(d: dict[str, Any]) -> tuple[pd.DataFrame, pd.DataFram
         - metadata_df: Contains all administrative and configuration data with MultiIndex
         - data_df: Contains time series measurements (DateTime, RawValue, BROID, ObservationID)
     """
-    all_metadata_dfs = []
-    all_data_dfs = []
     entity_parsers = _get_entity_parsers()
-
-    # Log which entities are present in the file
-    available_entities = [k for k in entity_parsers.keys() if k in d]
-    missing_entities = [k for k in entity_parsers.keys() if k not in d]
-    logger.info(f"Found entities: {available_entities}")
-    logger.debug(f"Missing entities: {missing_entities}")
-
-    for entity_name, parser in entity_parsers.items():
-        if entity_name in d:
-            entity_arr = d[entity_name]
-            logger.debug(f"Parsing {entity_name} with {len(entity_arr)} items")
-            if isinstance(entity_arr, np.ndarray):
-                try:
-                    metadata_df, data_df = parser(entity_arr)
-                    if not metadata_df.empty:
-                        logger.debug(
-                            f"  {entity_name}: {len(metadata_df)} metadata rows"
-                        )
-                        all_metadata_dfs.append(metadata_df)
-                    else:
-                        logger.debug(f"  {entity_name}: empty metadata")
-                    if not data_df.empty:
-                        logger.debug(f"  {entity_name}: {len(data_df)} data rows")
-                        all_data_dfs.append(data_df)
-                    else:
-                        logger.debug(f"  {entity_name}: empty data")
-                except Exception as e:
-                    logger.error(f"Failed to parse {entity_name}: {e}")
-
-    return _concatenate_results(all_metadata_dfs, all_data_dfs, "Parsing")
+    return _parse_bronformat_common(d, entity_parsers, "Parsing")
 
 
 def _extract_measurements_from_h5py(
@@ -1233,6 +1270,9 @@ def parse_bronformat_h5py(h5file: h5py.File) -> tuple[pd.DataFrame, pd.DataFrame
     This function extracts entity data from the HDF5 file and parses it using
     the same parsing functions as the scipy backend, ensuring consistent behavior.
 
+    This function now uses the shared _parse_bronformat_common function to
+    maximize code reuse with the scipy backend.
+
     Parameters
     ----------
     h5file : h5py.File
@@ -1252,36 +1292,16 @@ def parse_bronformat_h5py(h5file: h5py.File) -> tuple[pd.DataFrame, pd.DataFrame
 
     entity_parsers = _get_entity_parsers()
 
-    # Parse each entity type separately
-    all_metadata_dfs = []
-    all_data_dfs = []
-
-    for entity_name, parser in entity_parsers.items():
+    # Extract entity data from HDF5 file
+    entity_data = {}
+    for entity_name in entity_parsers.keys():
         if entity_name in h5file:
             logger.debug(f"Extracting {entity_name} entity from HDF5")
             entity_arr = _extract_entity_data_from_h5py(h5file, entity_name)
+            if entity_arr is not None:
+                entity_data[entity_name] = entity_arr
 
-            if entity_arr is not None and isinstance(entity_arr, np.ndarray):
-                logger.debug(f"Parsing {entity_name} with {len(entity_arr)} items")
-                try:
-                    metadata_df, data_df = parser(entity_arr)
-                    if not metadata_df.empty:
-                        logger.debug(
-                            f"  {entity_name}: {len(metadata_df)} metadata rows"
-                        )
-                        all_metadata_dfs.append(metadata_df)
-                    else:
-                        logger.debug(f"  {entity_name}: empty metadata")
-                    if not data_df.empty:
-                        logger.debug(f"  {entity_name}: {len(data_df)} data rows")
-                        all_data_dfs.append(data_df)
-                    else:
-                        logger.debug(f"  {entity_name}: empty data")
-                except Exception as e:
-                    # Log error but continue with other entities
-                    logger.error(f"Failed to parse {entity_name}: {e}")
-
-    return _concatenate_results(all_metadata_dfs, all_data_dfs, "HDF5 parsing")
+    return _parse_bronformat_common(entity_data, entity_parsers, "HDF5 parsing")
 
 
 if __name__ == "__main__":
