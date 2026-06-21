@@ -24,6 +24,9 @@ EntityType = Literal[
     "GMW",
     "GLD",
     "GAR",
+    "BHR",
+    "GUF",
+    "GPD",
     "Proces",
     "IN",
     "QC",
@@ -583,6 +586,21 @@ def _parse_cache(cache_arr: NpStructuredArray) -> tuple[pd.DataFrame, pd.DataFra
     return _parse_entity_array(cache_arr, "Cache")
 
 
+def _parse_bhr(bhr_arr: NpStructuredArray) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Parse BHR (Borehole) array."""
+    return _parse_entity_array(bhr_arr, "BHR", "BHRID")
+
+
+def _parse_guf(guf_arr: NpStructuredArray) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Parse GUF (Groundwater Extraction Facilities) array."""
+    return _parse_entity_array(guf_arr, "GUF", "GUFID")
+
+
+def _parse_gpd(gpd_arr: NpStructuredArray) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Parse GPD (Groundwater Permission Documents) array."""
+    return _parse_entity_array(gpd_arr, "GPD", "GPDID")
+
+
 def _check_extension(filepath: str | Path) -> None:
     """Check if the file has the expected extension.
 
@@ -601,6 +619,7 @@ def _check_extension(filepath: str | Path) -> None:
     extensions_accepted = (
         ".bron2",
         ".bronx",
+        ".hdf5",
     )
     extension = Path(filepath).suffix
     logger.debug(f"Checking file extension: {extension}")
@@ -720,6 +739,9 @@ def _get_entity_parsers() -> dict[
         "GMW": _parse_gmw,
         "GLD": _parse_gld,
         "GAR": _parse_gar,
+        "BHR": _parse_bhr,
+        "GUF": _parse_guf,
+        "GPD": _parse_gpd,
         "Proces": _parse_proces,
         "IN": _parse_in,
         "QC": _parse_qc,
