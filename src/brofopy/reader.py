@@ -598,54 +598,54 @@ def _parse_guf(guf_arr: NpStructuredArray) -> tuple[pd.DataFrame, pd.DataFrame]:
 
 def _parse_gpd(gpd_arr: NpStructuredArray) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Parse GPD (Groundwater Permission Documents) array.
-    
+
     Special handling for GPD: the Volumes subentity is treated as time series data
     and goes to data_df, while other subentities (Adm, History, Report) go to metadata_df.
     """
     logger.debug(f"Parsing {gpd_arr.size} GPD items")
-    
+
     metadata_rows: list[dict[str, Any]] = []
     data_rows: list[dict[str, Any]] = []
-    
+
     if gpd_arr.size == 0:
         logger.debug("  GPD: empty array")
         return _create_empty_result_dfs()
-    
+
     for entity_idx, entity in enumerate(gpd_arr.flat):
         # Get entity ID and BROID from Adm subentity
         entity_id: NpScalar | None = None
         broid: NpScalar | None = None
-        
+
         if entity.dtype.names:
             for field_name in entity.dtype.names:
                 field_data = entity[field_name]
-                
+
                 if isinstance(field_data, np.ndarray) and field_data.size > 0:
                     # Check if this is a structured array
                     if hasattr(field_data.dtype, "names") and field_data.dtype.names:
                         sub_entity_name: SubEntityType = field_name
-                        
+
                         # Special handling for Volumes subentity - goes to data_df
                         if sub_entity_name == "Volumes":
                             for vol_idx, volume in enumerate(field_data.flat):
                                 flat_data = _flatten_structured_item(volume)
                                 flat_data = _convert_datetime_values(flat_data)
-                                
+
                                 # Create data row for this volume
                                 data_row = {
                                     "Entity": "GPD",
                                     "BROID": broid,  # Use the GPD BROID
-                                    **flat_data
+                                    **flat_data,
                                 }
                                 data_rows.append(data_row)
                                 logger.debug(f"  GPD Volume data: {flat_data}")
-                                
+
                         else:
                             # Other subentities go to metadata_df
                             for sub_idx, sub_entity in enumerate(field_data.flat):
                                 flat_data = _flatten_structured_item(sub_entity)
                                 flat_data = _convert_datetime_values(flat_data)
-                                
+
                                 metadata_row = _build_metadata_row(
                                     broid,
                                     "GPD",
@@ -655,14 +655,14 @@ def _parse_gpd(gpd_arr: NpStructuredArray) -> tuple[pd.DataFrame, pd.DataFrame]:
                                     **flat_data,
                                 )
                                 metadata_rows.append(metadata_row)
-                                
+
                                 # Extract entity_id and broid from Adm subentity
                                 if sub_entity_name == "Adm":
                                     if "GPDID" in flat_data:
                                         entity_id = flat_data["GPDID"]
                                     if "BROID" in flat_data:
                                         broid = flat_data["BROID"]
-                                
+
                     else:
                         # Simple array field
                         flat_value = _extract_scalar(field_data)
@@ -687,20 +687,32 @@ def _parse_gpd(gpd_arr: NpStructuredArray) -> tuple[pd.DataFrame, pd.DataFrame]:
                         Value=flat_value,
                     )
                     metadata_rows.append(metadata_row)
-    
+
     # Create dataframes
     metadata_df = _create_metadata_df(metadata_rows)
-    
+
     if data_rows:
         # Create data_df with appropriate columns
         data_df = pd.DataFrame(data_rows)
         if not data_df.empty:
             data_df = data_df.set_index(["Entity", "BROID"])
         else:
-            data_df = pd.DataFrame(columns=["Entity", "BROID", "BeginDate", "EndDate", "GPDID", "Volume", "WaterInOut"]).set_index(["Entity", "BROID"])
+            data_df = pd.DataFrame(
+                columns=[
+                    "Entity",
+                    "BROID",
+                    "BeginDate",
+                    "EndDate",
+                    "GPDID",
+                    "Volume",
+                    "WaterInOut",
+                ]
+            ).set_index(["Entity", "BROID"])
     else:
-        data_df = pd.DataFrame(columns=DEFAULT_COLUMNS_DATA).set_index(["Entity", "BROID"])
-    
+        data_df = pd.DataFrame(columns=DEFAULT_COLUMNS_DATA).set_index(
+            ["Entity", "BROID"]
+        )
+
     return metadata_df, data_df
 
 

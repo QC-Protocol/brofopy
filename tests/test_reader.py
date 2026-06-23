@@ -42,13 +42,6 @@ def test_read_bronx() -> None:
     assert not data_df.empty
 
 
-if __name__ == "__main__":
-    # test_read_bron()
-    # test_read_bron2()
-    # test_read_bronx()
-    pass
-
-
 def test_read_gar_hdf5() -> None:
     """Test that read_bronformat can read a GAR-only .hdf5 file."""
     metadata_df, data_df = read_bronformat(data_path / "gar.hdf5", backend="h5py")
@@ -125,19 +118,19 @@ def test_read_gpd_hdf5() -> None:
 
     # Check that GPD entity is present in metadata
     assert "GPD" in metadata_df.index.get_level_values(0).unique()
-    
+
     # Check that GPD Volumes data is in data_df instead of metadata_df
     assert "GPD" in data_df.index.get_level_values(0).unique()
-    
+
     # Check that Volumes subentity is not in metadata_df (it should be in data_df now)
     gpd_metadata = metadata_df.loc["GPD"]
     assert "Volumes" not in gpd_metadata.index.get_level_values("SubEntity").unique()
-    
+
     # Check that data_df contains the expected columns for GPD Volumes
     expected_columns = ["BeginDate", "EndDate", "GPDID", "Volume", "WaterInOut"]
     for col in expected_columns:
         assert col in data_df.columns, f"Expected column {col} not found in data_df"
-    
+
     # Check that GPD Volumes data is not empty
     gpd_data = data_df.loc["GPD"]
     assert not gpd_data.empty
