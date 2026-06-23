@@ -123,5 +123,22 @@ def test_read_gpd_hdf5() -> None:
     # Check that the DataFrames are not empty
     assert not metadata_df.empty
 
-    # Check that GPD entity is present
+    # Check that GPD entity is present in metadata
     assert "GPD" in metadata_df.index.get_level_values(0).unique()
+    
+    # Check that GPD Volumes data is in data_df instead of metadata_df
+    assert "GPD" in data_df.index.get_level_values(0).unique()
+    
+    # Check that Volumes subentity is not in metadata_df (it should be in data_df now)
+    gpd_metadata = metadata_df.loc["GPD"]
+    assert "Volumes" not in gpd_metadata.index.get_level_values("SubEntity").unique()
+    
+    # Check that data_df contains the expected columns for GPD Volumes
+    expected_columns = ["BeginDate", "EndDate", "GPDID", "Volume", "WaterInOut"]
+    for col in expected_columns:
+        assert col in data_df.columns, f"Expected column {col} not found in data_df"
+    
+    # Check that GPD Volumes data is not empty
+    gpd_data = data_df.loc["GPD"]
+    assert not gpd_data.empty
+    assert len(gpd_data) > 0
