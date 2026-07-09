@@ -1103,7 +1103,12 @@ def _extract_h5py_dataset(
 
     # Handle other integer types that might be empty/zero character arrays
     # This can happen with malformed data where BROID is stored as uint64 [0, 0]
-    if dataset.dtype in (np.uint8, np.uint32, np.uint64, np.int16, np.int32, np.int64):
+    # Only convert to strings for arrays with multiple elements (likely character arrays)
+    # Single-element integer arrays are treated as numeric values
+    if (
+        dataset.dtype in (np.uint8, np.uint32, np.uint64, np.int16, np.int32, np.int64)
+        and data.size > 1
+    ):
         # If all values are zero, treat as empty string
         if np.all(data == 0):
             return None
