@@ -17,13 +17,20 @@ def test_read_gar_hdf5():
     assert isinstance(result, BronFormat)
     assert result.GAR is not None
     assert len(result.GAR) > 0  # Has at least one entry
-    
+
     # Check structure of first GAR entry
     first_entry = next(iter(result.GAR.values()))
     assert isinstance(first_entry, dict)
-    
+
     # GAR should have specific sub-entities
-    expected_sub_entities = ["Adm", "Analysis", "Field", "History", "Lab", "Measurement"]
+    expected_sub_entities = [
+        "Adm",
+        "Analysis",
+        "Field",
+        "History",
+        "Lab",
+        "Measurement",
+    ]
     for sub_entity in expected_sub_entities:
         assert sub_entity in first_entry, f"Missing sub-entity: {sub_entity}"
 
@@ -38,33 +45,33 @@ def test_read_gld_hdf5():
     # Check first GLD entry has expected structure
     first_broid, first_entry = next(iter(result.GLD.items()))
     assert isinstance(first_entry, dict)
-    
+
     # GLD should have specific sub-entities
     expected_sub_entities = ["Adm", "Dossier", "History", "Source"]
     for sub_entity in expected_sub_entities:
         assert sub_entity in first_entry, f"Missing sub-entity: {sub_entity}"
-    
+
     # Check Source sub-entity
     source = first_entry["Source"]
     assert isinstance(source, dict)
-    
+
     # Source should have Measurements
     assert "Measurements" in source
     assert isinstance(source["Measurements"], list)
     assert len(source["Measurements"]) > 0
-    
+
     # Check first measurement has expected keys
     first_measurement = source["Measurements"][0]
     assert isinstance(first_measurement, dict)
     assert "DateTime" in first_measurement
     assert "RawValue" in first_measurement
-    
+
     # Check Dossier has expected keys
     dossier = first_entry["Dossier"]
     assert "GMWBROID" in dossier
     assert "GMWID" in dossier
     assert "TubeNo" in dossier
-    
+
     # Check Adm has expected keys
     adm = first_entry["Adm"]
     assert "AccParty" in adm or "BROID" in adm or "EntityID" in adm
@@ -75,16 +82,16 @@ def test_read_bhr_hdf5():
     result = read_bronformat(data_path / "gld_bhr.hdf5")
     assert result.BHR is not None
     assert len(result.BHR) > 0
-    
+
     # Check structure of first BHR entry
     first_entry = next(iter(result.BHR.values()))
     assert isinstance(first_entry, dict)
-    
+
     # BHR should have specific sub-entities
     expected_sub_entities = ["Adm", "Borehole", "History", "Layers"]
     for sub_entity in expected_sub_entities:
         assert sub_entity in first_entry, f"Missing sub-entity: {sub_entity}"
-    
+
     # Check Adm has BHRID
     adm = first_entry["Adm"]
     assert "BHRID" in adm or "EntityID" in adm
@@ -97,19 +104,21 @@ def test_read_guf_gpd_hdf5():
     assert result.GPD is not None
     assert len(result.GUF) > 0
     assert len(result.GPD) > 0
-    
+
     # Check GUF structure
     first_guf = next(iter(result.GUF.values()))
     assert isinstance(first_guf, dict)
     # GUF should have Adm sub-entity
     assert "Adm" in first_guf
-    
+
     # Check GPD structure
     first_gpd = next(iter(result.GPD.values()))
     assert isinstance(first_gpd, dict)
     # GPD may have Volumes sub-entity
     if "Volumes" in first_gpd:
-        assert isinstance(first_gpd["Volumes"], list) or isinstance(first_gpd["Volumes"], dict)
+        assert isinstance(first_gpd["Volumes"], list) or isinstance(
+            first_gpd["Volumes"], dict
+        )
 
 
 def test_read_sad_hdf5():
@@ -117,7 +126,7 @@ def test_read_sad_hdf5():
     result = read_bronformat(data_path / "sad.hdf5")
     assert result.SAD is not None
     assert len(result.SAD) > 0
-    
+
     # Check structure of first SAD entry
     first_entry = next(iter(result.SAD.values()))
     assert isinstance(first_entry, dict)
@@ -129,31 +138,39 @@ def test_gld_has_all_expected_sub_entities():
     """Test that all GLD entries have all expected sub-entities and keys."""
     result = read_bronformat(data_path / "gld_bhr.hdf5")
     assert result.GLD is not None
-    
+
     for broid, entry in result.GLD.items():
         # Check sub-entities exist
         assert "Adm" in entry, f"GLD entry {broid} missing Adm"
         assert "Dossier" in entry, f"GLD entry {broid} missing Dossier"
         assert "History" in entry, f"GLD entry {broid} missing History"
         assert "Source" in entry, f"GLD entry {broid} missing Source"
-        
+
         # Check Source has Measurements
         source = entry["Source"]
-        assert "Measurements" in source, f"GLD entry {broid} Source missing Measurements"
-        assert isinstance(source["Measurements"], list), f"GLD entry {broid} Measurements is not a list"
-        
+        assert "Measurements" in source, (
+            f"GLD entry {broid} Source missing Measurements"
+        )
+        assert isinstance(source["Measurements"], list), (
+            f"GLD entry {broid} Measurements is not a list"
+        )
+
         # Check Measurements have required keys
         if len(source["Measurements"]) > 0:
             first_measurement = source["Measurements"][0]
-            assert "DateTime" in first_measurement, f"GLD entry {broid} measurement missing DateTime"
-            assert "RawValue" in first_measurement, f"GLD entry {broid} measurement missing RawValue"
+            assert "DateTime" in first_measurement, (
+                f"GLD entry {broid} measurement missing DateTime"
+            )
+            assert "RawValue" in first_measurement, (
+                f"GLD entry {broid} measurement missing RawValue"
+            )
 
 
 def test_gld_measurements_count():
     """Test that GLD Measurements have the expected number of entries."""
     result = read_bronformat(data_path / "gld_bhr.hdf5")
     assert result.GLD is not None
-    
+
     for broid, entry in result.GLD.items():
         source = entry["Source"]
         measurements = source["Measurements"]
@@ -196,7 +213,7 @@ def test_no_bron2_extension():
     assert isinstance(result, BronFormat)
     # At least one entity should be present
     assert len(result.to_dict()) > 0
-    
+
     # Check GLD structure in .bron2 file
     if result.GLD is not None:
         assert len(result.GLD) > 0
