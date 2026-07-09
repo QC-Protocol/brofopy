@@ -33,6 +33,7 @@ EntityType = Literal[
     "File",
     "GIS",
     "Cache",
+    "SAD",
 ]
 SubEntityType = Literal[
     "Adm",
@@ -46,6 +47,10 @@ SubEntityType = Literal[
     "Transect",
     "Hist",
     "GLD",
+    "Analysis",
+    "Borehole",
+    "Layer",
+    "Site",
 ]
 
 DEFAULT_COLUMNS_METADATA: list[str] = [
@@ -591,6 +596,11 @@ def _parse_bhr(bhr_arr: NpStructuredArray) -> tuple[pd.DataFrame, pd.DataFrame]:
     return _parse_entity_array(bhr_arr, "BHR", "BHRID")
 
 
+def _parse_sad(sad_arr: NpStructuredArray) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Parse SAD (Soil Analysis Data) array."""
+    return _parse_entity_array(sad_arr, "SAD", "SADID")
+
+
 def _parse_guf(guf_arr: NpStructuredArray) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Parse GUF (Groundwater Extraction Facilities) array."""
     return _parse_entity_array(guf_arr, "GUF", "GUFID")
@@ -863,6 +873,7 @@ def _get_entity_parsers() -> dict[
         "File": _parse_file,
         "GIS": _parse_gis,
         "Cache": _parse_cache,
+        "SAD": _parse_sad,
     }
 
 

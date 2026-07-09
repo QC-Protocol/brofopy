@@ -135,3 +135,18 @@ def test_read_gpd_hdf5() -> None:
     gpd_data = data_df.loc["GPD"]
     assert not gpd_data.empty
     assert len(gpd_data) > 0
+
+
+def test_read_sad_hdf5() -> None:
+    """Test that read_bronformat can read a SAD-only .hdf5 file."""
+    metadata_df, data_df = read_bronformat(data_path / "sad.hdf5", backend="h5py")
+
+    # Check that the returned objects are DataFrames
+    assert isinstance(metadata_df, type(data_df))
+    assert isinstance(data_df, type(metadata_df))
+
+    # Check that the DataFrames are not empty
+    assert not metadata_df.empty
+
+    # Check that SAD entity is present
+    assert "SAD" in metadata_df.index.get_level_values(0).unique()
