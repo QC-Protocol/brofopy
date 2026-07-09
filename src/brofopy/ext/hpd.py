@@ -61,7 +61,7 @@ def to_obscollection(
         # Get GMWBROID and TubeNo from Dossier sub-entity
         dossier = data.get("Dossier", {})
         gmw_id = str(dossier.get("GMWBROID", ""))
-        tube_no = float(dossier.get("TubeNo", 0))
+        tube_no = int(dossier.get("TubeNo", 0))
 
         # Get coordinates from GMW data
         x = y = ground_level = tube_top = screen_top = screen_bottom = 0.0

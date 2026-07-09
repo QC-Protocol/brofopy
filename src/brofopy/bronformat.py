@@ -74,6 +74,7 @@ class BronFormat:
     SAD: Optional[dict[str, Any]] = None
 
     def __repr__(self) -> str:
+        """Representation of the BronFormat object."""
         entities = [name for name, val in self.__dict__.items() if val is not None]
         return f"BronFormat({', '.join(entities)})"
 
@@ -180,13 +181,19 @@ def _convert_from_dataframes(
                 if entry_id not in entity_dict:
                     entity_dict[entry_id] = {}
 
+                # Create sub-entity dict (even if empty)
+                if sub_entity not in entity_dict[entry_id]:
+                    entity_dict[entry_id][sub_entity] = {}
+
                 # Add all columns as key-value pairs
+                # Exclude internal columns (EntityID, SubEntityID)
+                internal_cols = {"EntityID", "SubEntityID"}
                 for _, row in sub_group.iterrows():
                     for col in sub_group.columns:
+                        if col in internal_cols:
+                            continue
                         val = row[col]
                         if pd.notna(val):
-                            if sub_entity not in entity_dict[entry_id]:
-                                entity_dict[entry_id][sub_entity] = {}
                             entity_dict[entry_id][sub_entity][col] = val
         else:
             # Group by BROID
@@ -200,12 +207,17 @@ def _convert_from_dataframes(
 
                 # Group by SubEntity
                 for sub_entity, sub_group in group.groupby(level="SubEntity"):
+                    # Create sub-entity dict (even if empty)
                     if sub_entity not in entity_dict[broid_str]:
                         entity_dict[broid_str][sub_entity] = {}
 
                     # Add all columns as key-value pairs
+                    # Exclude internal columns (EntityID, SubEntityID)
+                    internal_cols = {"EntityID", "SubEntityID"}
                     for _, row in sub_group.iterrows():
                         for col in sub_group.columns:
+                            if col in internal_cols:
+                                continue
                             val = row[col]
                             if pd.notna(val):
                                 entity_dict[broid_str][sub_entity][col] = val
