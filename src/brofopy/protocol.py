@@ -16,6 +16,7 @@ class DatasetInfo:
     size: int
 
     def __repr__(self) -> str:
+        """Return a concise string representation of the dataset."""
         return f"Dataset(shape={self.shape}, dtype={self.dtype})"
 
 
@@ -27,6 +28,7 @@ class GroupInfo:
     groups: dict[str, "GroupInfo"] = field(default_factory=dict)
 
     def __repr__(self) -> str:
+        """Return a concise string representation of the dataset."""
         parts = []
         if self.datasets:
             parts.append(f"datasets={list(self.datasets.keys())}")
@@ -233,7 +235,7 @@ class HDF5Structure:
             self._print_group_info(info, indent + 1)
 
     def _print_group_info(self, group: GroupInfo, indent: int) -> None:
-        """Helper to print a GroupInfo recursively."""
+        """Print GroupInfo recursively."""
         prefix = "  " * indent
         for ds_name, ds_info in group.datasets.items():
             print(f"{prefix}  {ds_name}: {ds_info.shape} {ds_info.dtype}")
