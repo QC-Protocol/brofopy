@@ -242,10 +242,6 @@ class HDF5Structure:
             self._print_group_info(grp_info, indent + 1)
 
 
-# Backward compatibility alias
-get_hdf5_structure = HDF5Structure.from_file
-
-
 # Example usage
 if __name__ == "__main__":
     testdata_path = Path(__file__).parent.parent.parent / "tests/data/"
