@@ -2,45 +2,52 @@
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 import pandas as pd
 from hydropandas import GroundwaterObs, ObsCollection, WaterQualityObs
 
+if TYPE_CHECKING:
+    from brofopy.bronformat import BronFormat
+
 
 def to_obscollection(
-    data_df: pd.DataFrame,
-    metadata_df: pd.DataFrame,
-    entity: Literal["GLD", "GAR"],
-    name: str,
+    bronformat: "BronFormat",
+    entity: Literal["GLD", "GAR"] = "GLD",
+    name: str = "",
 ) -> ObsCollection:
-    """Convert brofopy DataFrames to a HydroPandas ObsCollection.
+    """Convert brofopy BronFormat data to a HydroPandas ObsCollection.
 
     Parameters
     ----------
-    data_df : pd.DataFrame
-        Data DataFrame produced by :func:`brofopy.reader.read_bronformat`.
-        Should have DateTime and RawValue columns with index (Entity, BROID).
-    entity : Literal["GLD", "GAR"]
-        The entity type to convert (e.g., "GLD" for groundwater, "GAR
-        for water quality).
-    metadata_df : pd.DataFrame
-        Metadata DataFrame produced by :func:`brofopy.reader.read_bronformat`.
-        Should have index (Entity, BROID, SubEntity).
+    bronformat : BronFormat
+        A BronFormat object with entity data.
+    entity : Literal["GLD", "GAR"], optional
+        The entity type to convert (e.g., "GLD" for groundwater, "GAR"
+        for water quality). By default "GLD".
     name : str, optional
         Name for the ObsCollection, by default "".
 
     Returns
     -------
     ObsCollection
-        A HydroPandas ``ObsCollection`` built from *data_df* and *metadata_df*.
+        A HydroPandas ``ObsCollection`` built from the data.
 
     Examples
     --------
-    >>> from brofopy.reader import read_bronformat
-    >>> metadata, data = read_bronformat("path/to/file.bron2")
-    >>> oc = to_obscollection(data, metadata, entity="GLD")
+    >>> from brofopy import read_bronformat
+    >>> bf = read_bronformat("path/to/file.bron2")
+    >>> oc = to_obscollection(bf, entity="GLD", name="MyCollection")
     """
+    entity_data = getattr(bronformat, entity, None)
+
+    if entity_data is None:
+        return ObsCollection(name=name)
+
+    # Get metadata and data for this entity
+    # We need to access GMW data as well for coordinates
+    gmw_data = getattr(bronformat, "GMW", None)
+
     # Create GroundwaterObs object
     if entity == "GLD":
         Obs = GroundwaterObs
@@ -49,42 +56,40 @@ def to_obscollection(
     else:
         raise ValueError(f"Unsupported entity type: {entity}")
 
-    if data_df.empty:
-        return ObsCollection(name=name)
-
-    # Filter unique BROIDs for the specified entity
-    bro_ids = (
-        metadata_df.loc[metadata_df.index.get_level_values("Entity") == entity]
-        .index.get_level_values("BROID")
-        .unique()
-    )
-
     obs_list = []
-    for bro_id in bro_ids:
-        gmw_id = str(metadata_df.loc[(entity, bro_id, "Dossier"), "GMWBROID"].squeeze())
-        tube_no = float(
-            metadata_df.loc[(entity, bro_id, "Dossier"), "TubeNo"].squeeze()
-        )
+    for bro_id, data in entity_data.items():
+        # Get GMWBROID and TubeNo from Dossier sub-entity
+        dossier = data.get("Dossier", {})
+        gmw_id = str(dossier.get("GMWBROID", ""))
+        tube_no = float(dossier.get("TubeNo", 0))
 
-        x = float(metadata_df.loc[("GMW", gmw_id, "Well"), "XCoordinate"].squeeze())
-        y = float(metadata_df.loc[("GMW", gmw_id, "Well"), "YCoordinate"].squeeze())
-        ground_level = float(
-            metadata_df.loc[("GMW", gmw_id, "Well"), "SurfaceLevel"].squeeze()
-        )
-        tube_df = metadata_df.loc[("GMW", gmw_id, "Tube")].query(f"TubeNo == {tube_no}")
-        screen_top = float(tube_df.loc[("GMW", gmw_id, "Tube"), "FilterTopLevel"])
-        screen_bottom = float(tube_df.loc[("GMW", gmw_id, "Tube"), "FilterBottomLevel"])
-        tube_top = float(tube_df.loc[("GMW", gmw_id, "Tube"), "TopLevel"])
+        # Get coordinates from GMW data
+        x = y = ground_level = tube_top = screen_top = screen_bottom = 0.0
+        if gmw_data and gmw_id in gmw_data:
+            gmw_entry = gmw_data[gmw_id]
+            well = gmw_entry.get("Well", {})
+            x = float(well.get("XCoordinate", 0.0))
+            y = float(well.get("YCoordinate", 0.0))
+            ground_level = float(well.get("SurfaceLevel", 0.0))
 
-        # Get time series data for this BROID
-        ts_data = data_df.loc[(entity, bro_id)]
-        if isinstance(ts_data, pd.Series):
-            ts_data = ts_data.to_frame().T
+            # Find tube data matching TubeNo
+            tube = gmw_entry.get("Tube", {})
+            if isinstance(tube, dict):
+                screen_top = float(tube.get("FilterTopLevel", 0.0))
+                screen_bottom = float(tube.get("FilterBottomLevel", 0.0))
+                tube_top = float(tube.get("TopLevel", 0.0))
 
-        # Pivot to have DateTime as index and RawValue as column
-        if len(ts_data) > 0:
-            ts_df = ts_data.set_index("DateTime")["RawValue"]
-            ts_df = ts_df.to_frame(name="RawValue")
+        # Create DataFrame from Source/Measurements
+        source = data.get("Source", {})
+        ts_list = source.get("Measurements", [])
+        if ts_list:
+            ts_df = pd.DataFrame(ts_list)
+            if "DateTime" in ts_df.columns:
+                ts_df = ts_df.set_index("DateTime")["RawValue"]
+                ts_df = ts_df.to_frame(name="RawValue")
+            else:
+                ts_df = pd.DataFrame(columns=["RawValue"])
+                ts_df.index.name = "DateTime"
         else:
             ts_df = pd.DataFrame(columns=["RawValue"])
             ts_df.index.name = "DateTime"
