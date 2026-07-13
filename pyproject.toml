@@ -23,7 +23,6 @@ dependencies = [
     "scipy>=1.16.0",
     "pandas>=2.0",
     "hydropandas>=0.18.0",
-    "brodata>=0.1.0",
     "h5py>=3.16.0",
 ]
 classifiers = [
@@ -43,7 +42,7 @@ docs = ["sphinx", "sphinx-rtd-theme", "myst-parser", "ipykernel"]
 where = ["src"]
 
 [tool.setuptools.dynamic]
-version = {attr = "brofopy._version.__version__"}
+version = { attr = "brofopy._version.__version__" }
 
 [tool.ruff]
 src = ["src"]
