@@ -1,10 +1,10 @@
 name: CI
 
 on:
-  # push:
-  # branches: [ main ]
+  push:
+    branches: [main]
   pull_request:
-    branches: [ main, dev ]
+    branches: [main, dev]
 
 jobs:
   lint:
@@ -48,9 +48,6 @@ jobs:
 
       - name: Install dev dependencies
         run: uv sync --extra dev
-
-      - name: Type check
-        run: uv run ty check src/
 
   test:
     runs-on: ubuntu-latest

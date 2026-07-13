@@ -4,7 +4,6 @@ from pathlib import Path
 
 from brofopy import BronFormat, read_bronformat
 
-
 data_path = Path(__file__).parent / "data"
 
 

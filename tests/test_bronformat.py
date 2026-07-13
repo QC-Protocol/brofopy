@@ -11,7 +11,6 @@ import pytest
 from brofopy import read_bronformat
 from brofopy.bronformat import BronFormat
 
-
 data_path = Path(__file__).parent / "data"
 
 

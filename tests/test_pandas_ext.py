@@ -3,11 +3,9 @@
 from pathlib import Path
 
 import pandas as pd
-import pytest
 
 from brofopy import BronFormat, read_bronformat
 from brofopy.ext.pd import matlab_datetime_to_pandas_timestamp, to_dataframe
-
 
 data_path = Path(__file__).parent / "data"
 
