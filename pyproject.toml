@@ -17,9 +17,9 @@ authors = [
 ]
 requires-python = ">=3.11"
 dependencies = [
-    "scipy>=1.16.0",
+    "scipy>=1.14.0,<1.16.0",
     "pandas>=2.0",
-    "hydropandas>=0.18.0",
+    "hydropandas>=0.17.0",
     "h5py>=3.16.0",
 ]
 classifiers = [
