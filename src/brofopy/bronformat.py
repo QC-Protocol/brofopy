@@ -13,9 +13,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Literal
 
 import pandas as pd
+from hydropandas import ObsCollection
 
 
 @dataclass
@@ -58,25 +59,25 @@ class BronFormat:
         Soil Analysis Data.
     """
 
-    GMN: Optional[dict[str, Any]] = None
-    GMW: Optional[dict[str, Any]] = None
-    GLD: Optional[dict[str, Any]] = None
-    GAR: Optional[dict[str, Any]] = None
-    BHR: Optional[dict[str, Any]] = None
-    GUF: Optional[dict[str, Any]] = None
-    GPD: Optional[dict[str, Any]] = None
-    Proces: Optional[dict[str, Any]] = None
-    IN: Optional[dict[str, Any]] = None
-    QC: Optional[dict[str, Any]] = None
-    File: Optional[dict[str, Any]] = None
-    GIS: Optional[dict[str, Any]] = None
-    Cache: Optional[dict[str, Any]] = None
-    SAD: Optional[dict[str, Any]] = None
+    GMN: dict[str, Any] | None = None
+    GMW: dict[str, Any] | None = None
+    GLD: dict[str, Any] | None = None
+    GAR: dict[str, Any] | None = None
+    BHR: dict[str, Any] | None = None
+    GUF: dict[str, Any] | None = None
+    GPD: dict[str, Any] | None = None
+    Proces: dict[str, Any] | None = None
+    IN: dict[str, Any] | None = None
+    QC: dict[str, Any] | None = None
+    File: dict[str, Any] | None = None
+    GIS: dict[str, Any] | None = None
+    Cache: dict[str, Any] | None = None
+    SAD: dict[str, Any] | None = None
 
     def __repr__(self) -> str:
         """Representation of the BronFormat object."""
         entities = [name for name, val in self.__dict__.items() if val is not None]
-        return f"BronFormat({', '.join(entities)})"
+        return f"BronFormat({', '.join(sorted(entities))})"
 
     def to_dict(self) -> dict[str, Any]:
         """Convert entire structure to nested dictionary."""
@@ -84,6 +85,21 @@ class BronFormat:
 
     def print(self, indent: int = 0) -> None:
         """Pretty print the structure."""
+
+        def _print_dict(d: dict, indent: int) -> None:
+            """Pretty print a dictionary."""
+            prefix = "  " * indent
+            for key, val in d.items():
+                if isinstance(val, dict):
+                    print(f"{prefix}{key}/ (group)")
+                    _print_dict(val, indent + 1)
+                else:
+                    val_type = type(val).__name__
+                    if hasattr(val, "__len__") and not isinstance(val, str):
+                        print(f"{prefix}{key}: {val_type} with {len(val)} items")
+                    else:
+                        print(f"{prefix}{key}: {val_type} = {val}")
+
         prefix = "  " * indent
         for name, val in self.__dict__.items():
             if val is None:
@@ -91,20 +107,50 @@ class BronFormat:
             print(f"{prefix}{name}/ (group)")
             _print_dict(val, indent + 1)
 
+    def to_dataframes(self) -> tuple[pd.DataFrame, pd.DataFrame]:
+        """Convert BronFormat structure to metadata and data DataFrames.
 
-def _print_dict(d: dict, indent: int) -> None:
-    """Pretty print a dictionary."""
-    prefix = "  " * indent
-    for key, val in d.items():
-        if isinstance(val, dict):
-            print(f"{prefix}{key}/ (group)")
-            _print_dict(val, indent + 1)
-        else:
-            val_type = type(val).__name__
-            if hasattr(val, "__len__") and not isinstance(val, str):
-                print(f"{prefix}{key}: {val_type} with {len(val)} items")
-            else:
-                print(f"{prefix}{key}: {val_type} = {val}")
+        This recreates the original DataFrame-based output format with:
+        - metadata_df: Contains all administrative and configuration data with MultiIndex
+          (Entity, BROID, SubEntity) and columns (EntityID, SubEntityID, ...)
+        - data_df: Contains time series measurements with index (Entity, BROID) and columns
+          (DateTime, RawValue, ...)
+
+        Returns
+        -------
+        tuple[pd.DataFrame, pd.DataFrame]
+            (metadata_df, data_df) - Two DataFrames matching the original format.
+        """
+        return _convert_to_dataframes(self)
+
+    def to_obscollection(
+        self, entity: Literal["GLD", "GAR"] = "GLD", name: str = ""
+    ) -> ObsCollection:
+        """Convert BronFormat data to a HydroPandas ObsCollection.
+
+        Parameters
+        ----------
+        entity : Literal["GLD", "GAR"], optional
+            The entity type to convert (e.g., "GLD" for groundwater, "GAR"
+            for water quality). By default "GLD".
+        name : str, optional
+            Name for the ObsCollection, by default "".
+
+        Returns
+        -------
+        ObsCollection
+            A HydroPandas ObsCollection built from the data.
+
+        Raises
+        ------
+        ValueError
+            If the specified entity is not supported.
+        ImportError
+            If hydropandas is not installed.
+        """
+        from brofopy.ext.hpd import to_obscollection as _to_obscollection
+
+        return _to_obscollection(self, entity=entity, name=name)
 
 
 def _get_entity_id_from_row(row: pd.Series, entity_name: str) -> str | None:
@@ -223,34 +269,174 @@ def _convert_from_dataframes(
                                 entity_dict[broid_str][sub_entity][col] = val
 
         # Add time series data to Source/M measurements
-        if entity_name in data_df.index.get_level_values("Entity").unique():
-            entity_data = data_df.xs(entity_name, level="Entity")
-            for broid, group in entity_data.groupby(level="BROID", dropna=False):
-                if pd.isna(broid):
-                    continue
+        if (
+            not data_df.empty
+            and hasattr(data_df.index, "get_level_values")
+            and "Entity" in data_df.index.names
+        ):
+            if entity_name in data_df.index.get_level_values("Entity").unique():
+                entity_data = data_df.xs(entity_name, level="Entity")
+                for broid, group in entity_data.groupby(level="BROID", dropna=False):
+                    if pd.isna(broid):
+                        continue
 
-                broid_str = str(broid)
-                if broid_str not in entity_dict:
-                    entity_dict[broid_str] = {}
+                    broid_str = str(broid)
+                    if broid_str not in entity_dict:
+                        entity_dict[broid_str] = {}
 
-                # Store time series in Source sub-entity as Measurements
-                if "Source" not in entity_dict[broid_str]:
-                    entity_dict[broid_str]["Source"] = {}
+                    # Store time series in Source sub-entity as Measurements
+                    if "Source" not in entity_dict[broid_str]:
+                        entity_dict[broid_str]["Source"] = {}
 
-                # Convert to list of dicts
-                ts_list = []
-                for _, row in group.iterrows():
-                    ts_row = {}
-                    for col in group.columns:
-                        ts_row[col] = row[col]
-                    ts_list.append(ts_row)
+                    # Convert to list of dicts
+                    ts_list = []
+                    for _, row in group.iterrows():
+                        ts_row = {}
+                        for col in group.columns:
+                            ts_row[col] = row[col]
+                        ts_list.append(ts_row)
 
-                entity_dict[broid_str]["Source"]["Measurements"] = ts_list
+                    entity_dict[broid_str]["Source"]["Measurements"] = ts_list
 
         if entity_dict:
             setattr(result, entity_name, entity_dict)
 
     return result
+
+
+def _convert_to_dataframes(bronformat: BronFormat) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Convert BronFormat structure back to metadata and data DataFrames.
+
+    This is the reverse of _convert_from_dataframes and recreates the original
+    DataFrame-based format.
+
+    Parameters
+    ----------
+    bronformat : BronFormat
+        The BronFormat object to convert.
+
+    Returns
+    -------
+    tuple[pd.DataFrame, pd.DataFrame]
+        (metadata_df, data_df) - metadata and data DataFrames.
+    """
+    # Define entity types
+    entity_types = [
+        "GMN",
+        "GMW",
+        "GLD",
+        "GAR",
+        "BHR",
+        "GUF",
+        "GPD",
+        "Proces",
+        "IN",
+        "QC",
+        "File",
+        "GIS",
+        "Cache",
+        "SAD",
+    ]
+
+    metadata_rows = []
+    data_rows = []
+
+    for entity_name in entity_types:
+        entity_data = getattr(bronformat, entity_name, None)
+        if entity_data is None:
+            continue
+
+        for entity_id, entry in entity_data.items():
+            # Process metadata for each sub-entity
+            for sub_entity_name, sub_entity_data in entry.items():
+                if sub_entity_name == "Source" and "Measurements" in sub_entity_data:
+                    # Handle time series data separately
+                    measurements = sub_entity_data["Measurements"]
+                    if isinstance(measurements, list):
+                        for measurement in measurements:
+                            data_row = {
+                                "Entity": entity_name,
+                                "BROID": entity_id,
+                            }
+                            for key, value in measurement.items():
+                                data_row[key] = value
+                            data_rows.append(data_row)
+                    continue
+
+                # Handle Volumes for GPD (treat as time series)
+                if sub_entity_name == "Volumes" and entity_name == "GPD":
+                    volumes = (
+                        sub_entity_data["Volumes"]
+                        if isinstance(sub_entity_data, dict)
+                        else sub_entity_data
+                    )
+                    if isinstance(volumes, list):
+                        for volume in volumes:
+                            data_row = {
+                                "Entity": entity_name,
+                                "BROID": entity_id,
+                            }
+                            for key, value in volume.items():
+                                data_row[key] = value
+                            data_rows.append(data_row)
+                    continue
+
+                # Process metadata
+                if isinstance(sub_entity_data, dict):
+                    for field_name, field_value in sub_entity_data.items():
+                        # Skip Measurements and Volumes as they're handled separately
+                        if field_name in ("Measurements", "Volumes"):
+                            continue
+
+                        metadata_row = {
+                            "Entity": entity_name,
+                            "BROID": entity_id,
+                            "SubEntity": sub_entity_name,
+                            "EntityID": entity_id,
+                            "SubEntityID": 0,
+                        }
+                        metadata_row[field_name] = field_value
+                        metadata_rows.append(metadata_row)
+                else:
+                    # Simple field value
+                    metadata_row = {
+                        "Entity": entity_name,
+                        "BROID": entity_id,
+                        "SubEntity": sub_entity_name,
+                        "EntityID": entity_id,
+                        "SubEntityID": 0,
+                        "Value": sub_entity_data,
+                    }
+                    metadata_rows.append(metadata_row)
+
+    # Create DataFrames
+    if metadata_rows:
+        metadata_df = pd.DataFrame(metadata_rows)
+        if not metadata_df.empty:
+            metadata_df = metadata_df.set_index(["Entity", "BROID", "SubEntity"])
+    else:
+        metadata_df = pd.DataFrame(columns=["Entity", "BROID", "SubEntity"]).set_index(
+            ["Entity", "BROID", "SubEntity"]
+        )
+
+    if data_rows:
+        data_df = pd.DataFrame(data_rows)
+        if (
+            not data_df.empty
+            and "Entity" in data_df.columns
+            and "BROID" in data_df.columns
+        ):
+            data_df = data_df.set_index(["Entity", "BROID"])
+        else:
+            data_df = pd.DataFrame(
+                columns=["Entity", "BROID", "DateTime", "RawValue"]
+            ).set_index(["Entity", "BROID"])
+    else:
+        data_df = pd.DataFrame(
+            columns=["Entity", "BROID", "DateTime", "RawValue"]
+        ).set_index(["Entity", "BROID"])
+
+    return metadata_df, data_df
 
 
 def read_bronformat(filepath: str | Path) -> BronFormat:
