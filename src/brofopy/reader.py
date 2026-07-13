@@ -50,14 +50,14 @@ def _convert_to_python_types(value: Any) -> Any:
             return None
         if value.dtype == np.uint16 and np.all(value == 0):
             return None
-        if value.dtype in (np.uint16, np.uint8, np.int8, np.int16, np.int32, np.uint32):
+        if value.dtype in (np.uint16, np.uint8, np.int8, np.int16):
             try:
                 chars = value.flatten().tolist()
                 chars = [chr(c) for c in chars if c > 0]
                 if chars:
                     return "".join(chars)
                 return None
-            except (ValueError, TypeError):
+            except (ValueError, TypeError, OverflowError):
                 pass
         if value.size == 1:
             result = value.flat[0]
