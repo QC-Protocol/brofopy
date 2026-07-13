@@ -10,6 +10,8 @@ from hydropandas import GroundwaterObs, ObsCollection, WaterQualityObs
 if TYPE_CHECKING:
     from brofopy.bronformat import BronFormat
 
+from .pd import matlab_datetime_to_pandas_timestamp
+
 
 def to_obscollection(
     bronformat: "BronFormat",
@@ -83,7 +85,26 @@ def to_obscollection(
         source = data.get("Source", {})
         ts_list = source.get("Measurements", [])
         if ts_list:
-            ts_df = pd.DataFrame(ts_list)
+            # Convert MATLAB datenums to pandas Timestamps
+            processed_list = []
+            for meas in ts_list:
+                processed_meas = {}
+                for key, value in meas.items():
+                    if "DateTime" in key or "Date" in key:
+                        if value is not None:
+                            try:
+                                processed_meas[key] = (
+                                    matlab_datetime_to_pandas_timestamp(float(value))
+                                )
+                            except (ValueError, TypeError, OverflowError):
+                                processed_meas[key] = float(value)
+                        else:
+                            processed_meas[key] = value
+                    else:
+                        processed_meas[key] = value
+                processed_list.append(processed_meas)
+
+            ts_df = pd.DataFrame(processed_list)
             if "DateTime" in ts_df.columns:
                 ts_df = ts_df.set_index("DateTime")["RawValue"]
                 ts_df = ts_df.to_frame(name="RawValue")
