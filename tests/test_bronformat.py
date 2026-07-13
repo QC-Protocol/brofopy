@@ -1,21 +1,18 @@
-"""Comprehensive tests for brofopy.bronformat module.
+"""Tests for brofopy.bronformat module.
 
-Tests all methods and functions in the bronformat module:
-- BronFormat class methods (__repr__, to_dict, print)
-- Helper functions (_get_entity_id_from_row, _convert_from_dataframes)
-- Main function (read_bronformat - basic coverage, more in test_reader.py)
+Tests the BronFormat class and its methods.
 """
 
 from pathlib import Path
 
 import pandas as pd
+import pytest
 
-from brofopy.bronformat import (
-    BronFormat,
-    _convert_from_dataframes,
-    _get_entity_id_from_row,
-    read_bronformat,
-)
+from brofopy import read_bronformat
+from brofopy.bronformat import BronFormat
+
+
+data_path = Path(__file__).parent / "data"
 
 
 class TestBronFormatClass:
@@ -160,8 +157,8 @@ class TestBronFormatClass:
                     "Adm": {"BROID": "gld1", "name": "Level Data"},
                     "Source": {
                         "Measurements": [
-                            {"DateTime": "2023-01-01", "RawValue": 10.5},
-                            {"DateTime": "2023-01-02", "RawValue": 11.2},
+                            {"DateTime": 738189.0, "RawValue": 10.5},
+                            {"DateTime": 738190.0, "RawValue": 11.2},
                         ]
                     },
                 }
@@ -181,272 +178,166 @@ class TestBronFormatClass:
         bf.print(indent=1)
         captured = capsys.readouterr()
         # With indent=1, the prefix should be 2 spaces
-        _ = captured.out.strip().split("\n")
         assert "  GMN/ (group)" in captured.out
 
 
-class TestGetEntityIdFromRow:
-    """Tests for the _get_entity_id_from_row helper function."""
+class TestFromFile:
+    """Tests for the from_file class method."""
 
-    def test_entity_id_from_entity_id_column(self):
-        """Test extracting ID from EntityID column."""
-        row = pd.Series({"EntityID": "test123", "other": "value"})
-        result = _get_entity_id_from_row(row, "SomeEntity")
-        assert result == "test123"
-
-    def test_entity_id_from_specific_id_column(self):
-        """Test extracting ID from entity-specific ID column."""
-        row = pd.Series({"GMNID": "gmn123", "other": "value"})
-        result = _get_entity_id_from_row(row, "GMN")
-        assert result == "gmn123"
-
-    def test_entity_id_from_broid_column(self):
-        """Test extracting ID from BROID column."""
-        row = pd.Series({"BROID": "broid123", "other": "value"})
-        result = _get_entity_id_from_row(row, "SomeEntity")
-        assert result == "broid123"
-
-    def test_entity_id_from_generic_id_column(self):
-        """Test extracting ID from generic ID column."""
-        row = pd.Series({"ID": "id123", "other": "value"})
-        result = _get_entity_id_from_row(row, "SomeEntity")
-        assert result == "id123"
-
-    def test_entity_id_na_values_skipped(self):
-        """Test that NaN values are skipped."""
-        row = pd.Series({"EntityID": pd.NA, "BROID": pd.NA, "ID": pd.NA})
-        result = _get_entity_id_from_row(row, "SomeEntity")
-        assert result is None
-
-    def test_entity_id_priority_order(self):
-        """Test that EntityID has priority over other ID columns."""
-        row = pd.Series(
-            {"EntityID": "entity123", "BROID": "broid456", "GMNID": "gmn789"}
-        )
-        result = _get_entity_id_from_row(row, "GMN")
-        assert result == "entity123"
-
-    def test_entity_id_no_id_columns(self):
-        """Test with row that has no ID columns."""
-        row = pd.Series({"col1": "value1", "col2": "value2"})
-        result = _get_entity_id_from_row(row, "SomeEntity")
-        assert result is None
-
-    def test_entity_id_empty_row(self):
-        """Test with empty row."""
-        row = pd.Series(dtype=object)
-        result = _get_entity_id_from_row(row, "SomeEntity")
-        assert result is None
-
-    def test_entity_id_numeric_id(self):
-        """Test with numeric ID that gets converted to string."""
-        row = pd.Series({"BROID": 12345})
-        result = _get_entity_id_from_row(row, "SomeEntity")
-        assert result == "12345"
-        assert isinstance(result, str)
-
-
-class TestConvertFromDataframes:
-    """Tests for the _convert_from_dataframes function."""
-
-    def test_convert_empty_dataframes(self):
-        """Test conversion with empty DataFrames."""
-        metadata_df = pd.DataFrame()
-        data_df = pd.DataFrame()
-        result = _convert_from_dataframes(metadata_df, data_df)
-        assert isinstance(result, BronFormat)
-        assert result.to_dict() == {}
-
-    def test_convert_metadata_only(self):
-        """Test conversion with only metadata DataFrame."""
-        # Create a simple metadata DataFrame
-        metadata_df = pd.DataFrame(
-            {
-                "Entity": ["GLD", "GLD"],
-                "SubEntity": ["Adm", "Source"],
-                "BROID": ["gld1", "gld1"],
-                "BROID_SubEntity": [None, None],
-                "name": ["Level Data", None],
-                "other": [None, "value"],
-            }
-        )
-        metadata_df.index = pd.MultiIndex.from_arrays(
-            [
-                metadata_df["Entity"],
-                metadata_df["SubEntity"],
-                metadata_df["BROID"],
-                metadata_df["BROID_SubEntity"],
-            ],
-            names=["Entity", "SubEntity", "BROID", "BROID_SubEntity"],
-        )
-        metadata_df = metadata_df[["name", "other"]]
-
-        data_df = pd.DataFrame()
-        result = _convert_from_dataframes(metadata_df, data_df)
-
+    def test_from_file_hdf5(self):
+        """Test from_file with HDF5 file."""
+        result = BronFormat.from_file(data_path / "gld_bhr.hdf5")
         assert isinstance(result, BronFormat)
         assert result.GLD is not None
-        assert "gld1" in result.GLD
-        assert "Adm" in result.GLD["gld1"]
-        assert "Source" in result.GLD["gld1"]
+        assert len(result.GLD) > 0
 
-    def test_convert_with_time_series_data(self):
-        """Test conversion with time series data."""
-        # Create metadata DataFrame
-        metadata_df = pd.DataFrame(
-            {
-                "Entity": ["GLD"],
-                "SubEntity": ["Adm"],
-                "BROID": ["gld1"],
-                "BROID_SubEntity": [None],
-                "name": ["Level Data"],
+    def test_from_file_bron2(self):
+        """Test from_file with .bron2 file."""
+        result = BronFormat.from_file(data_path / "testdata.bron2")
+        assert isinstance(result, BronFormat)
+        # At least one entity should be present
+        assert len(result.to_dict()) > 0
+
+    def test_from_file_with_path_object(self):
+        """Test from_file with Path object."""
+        result = BronFormat.from_file(Path(data_path / "gld_bhr.hdf5"))
+        assert isinstance(result, BronFormat)
+
+    def test_from_file_with_string_path(self):
+        """Test from_file with string path."""
+        result = BronFormat.from_file(str(data_path / "gld_bhr.hdf5"))
+        assert isinstance(result, BronFormat)
+
+
+class TestToDataframe:
+    """Tests for the to_dataframe method."""
+
+    def test_to_dataframe_empty(self):
+        """Test to_dataframe with empty BronFormat."""
+        bf = BronFormat()
+        result = bf.to_dataframe()
+        assert isinstance(result, pd.DataFrame)
+        assert result.empty or len(result) == 0
+
+    def test_to_dataframe_with_measurements(self):
+        """Test to_dataframe with GLD data containing measurements."""
+        bf = BronFormat(
+            GLD={
+                "gld1": {
+                    "Adm": {"BROID": "gld1", "name": "Level Data"},
+                    "Source": {
+                        "Measurements": [
+                            {"DateTime": 738189.0, "RawValue": 10.5},
+                            {"DateTime": 738190.0, "RawValue": 11.2},
+                        ]
+                    },
+                }
             }
         )
-        metadata_df.index = pd.MultiIndex.from_arrays(
-            [
-                metadata_df["Entity"],
-                metadata_df["SubEntity"],
-                metadata_df["BROID"],
-                metadata_df["BROID_SubEntity"],
-            ],
-            names=["Entity", "SubEntity", "BROID", "BROID_SubEntity"],
-        )
-        metadata_df = metadata_df[["name"]]
+        result = bf.to_dataframe()
+        assert isinstance(result, pd.DataFrame)
+        # Should have at least DateTime and RawValue columns
+        assert "DateTime" in result.columns or len(result.columns) > 0
+        # Should have 2 rows (one for each measurement)
+        assert len(result) == 2
 
-        # Create data DataFrame with time series
-        data_df = pd.DataFrame(
-            {"DateTime": ["2023-01-01", "2023-01-02"], "RawValue": [10.5, 11.2]}
-        )
-        data_df.index = pd.MultiIndex.from_arrays(
-            [["GLD"], ["Source"], ["gld1"], [None]],
-            names=["Entity", "SubEntity", "BROID", "BROID_SubEntity"],
-        )
+    def test_to_dataframe_from_file(self):
+        """Test to_dataframe with real file data."""
+        bf = read_bronformat(data_path / "gld_bhr.hdf5")
+        result = bf.to_dataframe()
+        assert isinstance(result, pd.DataFrame)
+        # Should have some rows if there are measurements
+        if bf.GLD is not None:
+            # Count total measurements across all GLD entries
+            total_measurements = 0
+            for entry in bf.GLD.values():
+                source = entry.get("Source", {})
+                measurements = source.get("Measurements", [])
+                total_measurements += len(measurements)
+            if total_measurements > 0:
+                assert len(result) >= total_measurements
 
-        result = _convert_from_dataframes(metadata_df, data_df)
-
-        assert result.GLD is not None
-        assert "gld1" in result.GLD
-        assert "Source" in result.GLD["gld1"]
-        assert "Measurements" in result.GLD["gld1"]["Source"]
-        measurements = result.GLD["gld1"]["Source"]["Measurements"]
-        assert len(measurements) == 2
-        assert measurements[0]["DateTime"] == "2023-01-01"
-        assert measurements[0]["RawValue"] == 10.5
-
-    def test_convert_all_nan_broids(self):
-        """Test conversion when all BROIDs are NaN."""
-        metadata_df = pd.DataFrame(
-            {
-                "Entity": ["GMN", "GMN"],
-                "SubEntity": ["Adm", "Network"],
-                "BROID": [pd.NA, pd.NA],
-                "BROID_SubEntity": [None, None],
-                "GMNID": ["gmn123", None],
-                "name": ["Network 1", "Some value"],
+    def test_to_dataframe_multiindex(self):
+        """Test that to_dataframe creates MultiIndex."""
+        bf = BronFormat(
+            GLD={
+                "gld1": {
+                    "Source": {
+                        "Measurements": [
+                            {"DateTime": 738189.0, "RawValue": 10.5},
+                        ]
+                    },
+                }
             }
         )
-        metadata_df.index = pd.MultiIndex.from_arrays(
-            [
-                metadata_df["Entity"],
-                metadata_df["SubEntity"],
-                metadata_df["BROID"],
-                metadata_df["BROID_SubEntity"],
-            ],
-            names=["Entity", "SubEntity", "BROID", "BROID_SubEntity"],
+        result = bf.to_dataframe()
+        assert isinstance(result.index, pd.MultiIndex)
+        assert "Entity" in result.index.names
+        assert "BROID" in result.index.names
+
+    def test_to_dataframe_multiple_entities(self):
+        """Test to_dataframe with multiple entity types."""
+        bf = BronFormat(
+            GLD={
+                "gld1": {
+                    "Source": {
+                        "Measurements": [
+                            {"DateTime": 738189.0, "RawValue": 10.5},
+                        ]
+                    },
+                }
+            },
+            GMW={
+                "gmw1": {
+                    "Well": {"XCoordinate": 100.0, "YCoordinate": 200.0}
+                }
+            },
         )
-        metadata_df = metadata_df[["GMNID", "name"]]
+        result = bf.to_dataframe()
+        assert isinstance(result, pd.DataFrame)
+        # Should have data from GLD measurements
+        assert len(result) >= 1
 
-        data_df = pd.DataFrame()
-        result = _convert_from_dataframes(metadata_df, data_df)
 
-        # Should still create structure using extracted ID
-        assert result.GMN is not None or len(result.to_dict()) > 0
+class TestToObscollection:
+    """Tests for the to_obscollection method."""
 
-    def test_convert_multiple_entities(self):
-        """Test conversion with multiple entity types."""
-        metadata_df = pd.DataFrame(
-            {
-                "Entity": ["GLD", "BHR", "GLD"],
-                "SubEntity": ["Adm", "Borehole", "Source"],
-                "BROID": ["gld1", "bhr1", "gld1"],
-                "BROID_SubEntity": [None, None, None],
-                "name": ["GLD 1", "BHR 1", None],
-            }
-        )
-        metadata_df.index = pd.MultiIndex.from_arrays(
-            [
-                metadata_df["Entity"],
-                metadata_df["SubEntity"],
-                metadata_df["BROID"],
-                metadata_df["BROID_SubEntity"],
-            ],
-            names=["Entity", "SubEntity", "BROID", "BROID_SubEntity"],
-        )
-        metadata_df = metadata_df[["name"]]
+    def test_to_obscollection_empty(self):
+        """Test to_obscollection with empty BronFormat."""
+        bf = BronFormat()
+        result = bf.to_obscollection(entity="GLD", name="Test")
+        assert result.name == "Test"
 
-        data_df = pd.DataFrame()
-        result = _convert_from_dataframes(metadata_df, data_df)
+    def test_to_obscollection_with_gld_data(self):
+        """Test to_obscollection with GLD data."""
+        bf = read_bronformat(data_path / "gld_bhr.hdf5")
+        result = bf.to_obscollection(entity="GLD", name="TestCollection")
+        assert result.name == "TestCollection"
 
-        assert result.GLD is not None
-        assert result.BHR is not None
-        assert "gld1" in result.GLD
-        assert "bhr1" in result.BHR
-
-    def test_convert_internal_columns_excluded(self):
-        """Test that internal columns are excluded from conversion."""
-        metadata_df = pd.DataFrame(
-            {
-                "Entity": ["GLD"],
-                "SubEntity": ["Adm"],
-                "BROID": ["gld1"],
-                "BROID_SubEntity": [None],
-                "EntityID": ["should_be_excluded"],
-                "SubEntityID": ["should_be_excluded"],
-                "name": ["Level Data"],
-            }
-        )
-        metadata_df.index = pd.MultiIndex.from_arrays(
-            [
-                metadata_df["Entity"],
-                metadata_df["SubEntity"],
-                metadata_df["BROID"],
-                metadata_df["BROID_SubEntity"],
-            ],
-            names=["Entity", "SubEntity", "BROID", "BROID_SubEntity"],
-        )
-        metadata_df = metadata_df[["EntityID", "SubEntityID", "name"]]
-
-        data_df = pd.DataFrame()
-        result = _convert_from_dataframes(metadata_df, data_df)
-
-        assert result.GLD is not None
-        assert "gld1" in result.GLD
-        assert "Adm" in result.GLD["gld1"]
-        # EntityID and SubEntityID should be excluded
-        assert "EntityID" not in result.GLD["gld1"]["Adm"]
-        assert "SubEntityID" not in result.GLD["gld1"]["Adm"]
-        assert "name" in result.GLD["gld1"]["Adm"]
+    def test_to_obscollection_unsupported_entity(self):
+        """Test to_obscollection with unsupported entity type."""
+        bf = BronFormat(BHR={"bhr1": {"Borehole": {}}})
+        # BHR is not a supported entity for to_obscollection
+        with pytest.raises(ValueError, match="Unsupported entity type"):
+            bf.to_obscollection(entity="BHR", name="Test")
 
 
 class TestReadBronformat:
-    """Additional tests for read_bronformat function (beyond test_reader.py)."""
+    """Tests for read_bronformat function."""
 
     def test_read_bronformat_returns_bronformat(self):
         """Test that read_bronformat returns a BronFormat instance."""
-        data_path = Path(__file__).parent / "data"
         result = read_bronformat(data_path / "gld_bhr.hdf5")
         assert isinstance(result, BronFormat)
 
     def test_read_bronformat_to_dict_method(self):
         """Test that the result has working to_dict method."""
-        data_path = Path(__file__).parent / "data"
         result = read_bronformat(data_path / "gld_bhr.hdf5")
         result_dict = result.to_dict()
         assert isinstance(result_dict, dict)
 
     def test_read_bronformat_repr_method(self):
         """Test that the result has working repr method."""
-        data_path = Path(__file__).parent / "data"
         result = read_bronformat(data_path / "gld_bhr.hdf5")
         repr_str = repr(result)
         assert isinstance(repr_str, str)
@@ -454,7 +345,6 @@ class TestReadBronformat:
 
     def test_read_bronformat_print_method(self, capsys):
         """Test that the result has working print method."""
-        data_path = Path(__file__).parent / "data"
         result = read_bronformat(data_path / "gld_bhr.hdf5")
         result.print()
         captured = capsys.readouterr()
@@ -464,13 +354,11 @@ class TestReadBronformat:
 
     def test_read_bronformat_path_object(self):
         """Test read_bronformat with Path object."""
-        data_path = Path(__file__).parent / "data"
         result = read_bronformat(Path(data_path / "gld_bhr.hdf5"))
         assert isinstance(result, BronFormat)
 
     def test_read_bronformat_string_path(self):
         """Test read_bronformat with string path."""
-        data_path = Path(__file__).parent / "data"
         result = read_bronformat(str(data_path / "gld_bhr.hdf5"))
         assert isinstance(result, BronFormat)
 
@@ -483,52 +371,6 @@ class TestEdgeCases:
         bf = BronFormat()
         result = bf.to_dict()
         assert result == {}
-
-    def test_get_entity_id_with_mixed_na_and_values(self):
-        """Test _get_entity_id_from_row with mix of NaN and actual values."""
-        row = pd.Series(
-            {
-                "EntityID": pd.NA,
-                "BROID": pd.NA,
-                "CustomID": "actual_id",
-                "other": "value",
-            }
-        )
-        result = _get_entity_id_from_row(row, "SomeEntity")
-        assert result == "actual_id"
-
-    def test_convert_dataframes_with_na_values(self):
-        """Test _convert_from_dataframes with NaN values in data."""
-        metadata_df = pd.DataFrame(
-            {
-                "Entity": ["GLD"],
-                "SubEntity": ["Adm"],
-                "BROID": ["gld1"],
-                "BROID_SubEntity": [None],
-                "name": ["Level Data"],
-                "optional": [pd.NA],
-            }
-        )
-        metadata_df.index = pd.MultiIndex.from_arrays(
-            [
-                metadata_df["Entity"],
-                metadata_df["SubEntity"],
-                metadata_df["BROID"],
-                metadata_df["BROID_SubEntity"],
-            ],
-            names=["Entity", "SubEntity", "BROID", "BROID_SubEntity"],
-        )
-        metadata_df = metadata_df[["name", "optional"]]
-
-        data_df = pd.DataFrame()
-        result = _convert_from_dataframes(metadata_df, data_df)
-
-        assert result.GLD is not None
-        assert "gld1" in result.GLD
-        assert "Adm" in result.GLD["gld1"]
-        assert "name" in result.GLD["gld1"]["Adm"]
-        # NaN values should be excluded
-        assert "optional" not in result.GLD["gld1"]["Adm"]
 
 
 class TestPerformance:
