@@ -31,24 +31,6 @@ jobs:
       - name: Lint
         run: uv run ruff check --extend-select I,D .
 
-  typecheck:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.11"
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v7
-
-      - name: Install dev dependencies
-        run: uv sync --extra dev
-
   test:
     runs-on: ubuntu-latest
     permissions:
