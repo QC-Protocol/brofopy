@@ -16,9 +16,12 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
     "myst_parser",
+    "nbsphinx",
 ]
 
 html_theme = "sphinx_rtd_theme"
 
+root_doc = "index"
+
 templates_path = ["_templates"]
-exclude_patterns = []
+exclude_patterns = ["*.rst"]

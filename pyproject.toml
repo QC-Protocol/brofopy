@@ -36,7 +36,7 @@ classifiers = [
 [project.optional-dependencies]
 dev = ["brofopy[docs,tests]", "pre-commit"]
 tests = ["pytest", "pytest-cov", "ruff", "ty"]
-docs = ["sphinx", "sphinx-rtd-theme", "myst-parser", "ipykernel"]
+docs = ["sphinx", "sphinx-rtd-theme", "myst-parser", "ipykernel", "nbsphinx"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
