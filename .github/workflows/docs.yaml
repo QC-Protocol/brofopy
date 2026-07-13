@@ -28,5 +28,8 @@ jobs:
       - name: Install docs dependencies
         run: uv sync --extra docs
 
+      - name: Install pandoc
+        run: sudo apt-get update && sudo apt-get install -y pandoc
+
       - name: Build documentation
         run: uv run sphinx-build -W docs/source docs/_build
