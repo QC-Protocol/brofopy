@@ -287,11 +287,7 @@ class TestToDataframe:
                     },
                 }
             },
-            GMW={
-                "gmw1": {
-                    "Well": {"XCoordinate": 100.0, "YCoordinate": 200.0}
-                }
-            },
+            GMW={"gmw1": {"Well": {"XCoordinate": 100.0, "YCoordinate": 200.0}}},
         )
         result = bf.to_dataframe()
         assert isinstance(result, pd.DataFrame)
