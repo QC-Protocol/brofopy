@@ -9,14 +9,11 @@ description = "Read Bronformat data with SciPy, convert to Pandas DataFrames and
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
-maintainers = [
-    { name = "J. R. von Asmuth", email = "jos.von.asmuth@3hydro.nl" },
-]
+maintainers = [{ name = "J.R. von Asmuth", email = "jos.von.asmuth@3hydro.nl" }]
 authors = [
+    { name = "J.R. von Asmuth", email = "jos.von.asmuth@3hydro.nl" },
     { name = "M.A. Vonk", email = "m.vonk@artesia-water.nl" },
     { name = "R. Calje", email = "r.calje@artesia-water.nl" },
-    { name = "J. R. von Asmuth", email = "jos.von.asmuth@3hydro.nl" },
-    { name = "D. Krijnders", email = "dirkjan.krijnders@anteagroup.nl" },
 ]
 requires-python = ">=3.11"
 dependencies = [
