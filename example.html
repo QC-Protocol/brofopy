@@ -1,0 +1,1647 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BronFormat Example Usage &mdash; brofopy 0.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=7026087e"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API Reference" href="api.html" />
+    <link rel="prev" title="BroFoPy Documentation" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            brofopy
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">BronFormat Example Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#Packages">Packages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Loading-a-file">Loading a file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Exploring-the-BronFormat-object">Exploring the <code class="docutils literal notranslate"><span class="pre">BronFormat</span></code> object</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Extensions">Extensions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Coupling-to-Panads">Coupling to Panads</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Coupling-to-HydroPandas">Coupling to HydroPandas</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">brofopy</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">BronFormat Example Usage</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/example.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="BronFormat-Example-Usage">
+<h1>BronFormat Example Usage<a class="headerlink" href="#BronFormat-Example-Usage" title="Link to this heading"></a></h1>
+<p>This notebook demonstrates the usage of the BronFormat file format and its integration with the BroFoPy library. It covers loading files, using extensions, and coupling with Pandas and HydroPandas.</p>
+<section id="Packages">
+<h2>Packages<a class="headerlink" href="#Packages" title="Link to this heading"></a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">brofopy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">bfp</span>
+
+<span class="n">bfp</span><span class="o">.</span><span class="n">show_versions</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Python      : 3.13.5
+Brofopy     : 0.0.0
+Scipy       : 1.17.1
+Pandas      : 3.0.3
+Hydropandas : 0.18.1
+H5py        : 3.16.0
+
+</pre></div></div>
+</div>
+</section>
+<section id="Loading-a-file">
+<h2>Loading a file<a class="headerlink" href="#Loading-a-file" title="Link to this heading"></a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">test_data_path</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;tests/data/&quot;</span>
+<span class="n">bf</span> <span class="o">=</span> <span class="n">bfp</span><span class="o">.</span><span class="n">read_bronformat</span><span class="p">(</span><span class="n">test_data_path</span> <span class="o">/</span> <span class="s2">&quot;gld_bhr.hdf5&quot;</span><span class="p">)</span>
+<span class="n">bf</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+BronFormat(BHR, Cache, File, GIS, GLD, GMN, GMW, IN, Proces, QC)
+</pre></div></div>
+</div>
+</section>
+<section id="Exploring-the-BronFormat-object">
+<h2>Exploring the <code class="docutils literal notranslate"><span class="pre">BronFormat</span></code> object<a class="headerlink" href="#Exploring-the-BronFormat-object" title="Link to this heading"></a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">bf</span><span class="o">.</span><span class="n">BHR</span><span class="p">[</span><span class="s2">&quot;[0, 0]&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;Borehole&#39;: {&#39;BHRID&#39;: 12.0,
+  &#39;BoringOperator&#39;: &#39;01088169&#39;,
+  &#39;BoringProcedure&#39;: &#39;SIKB2001vanafV6.0&#39;,
+  &#39;Completed&#39;: 0,
+  &#39;Contaminated&#39;: 0,
+  &#39;ContinuouslySampled&#39;: &#39;nee&#39;,
+  &#39;DeliveryContext&#39;: &#39;publiekeTaak&#39;,
+  &#39;DescribedMaterial&#39;: &#39;grond&#39;,
+  &#39;DescriptionLocation&#39;: &#39;veld&#39;,
+  &#39;DescriptionOperator&#39;: &#39;01088169&#39;,
+  &#39;DescriptionProcedure&#39;: &#39;ISO14688d1v2019c2020&#39;,
+  &#39;DescriptionQuality&#39;: &#39;klasse3&#39;,
+  &#39;Discipline&#39;: &#39;geotechniek&#39;,
+  &#39;EndDate&#39;: 739742.0,
+  &#39;Excavated&#39;: 0,
+  &#39;HorPosMethod&#39;: &#39;RTKGPS5tot10cm&#39;,
+  &#39;IsCasing&#39;: 1,
+  &#39;IsRockRchd&#39;: 0,
+  &#39;Preparation&#39;: &#39;geen&#39;,
+  &#39;ResearchOperator&#39;: &#39;01088169&#39;,
+  &#39;SampleMoistness&#39;: &#39;veldvochtig&#39;,
+  &#39;SamplingProcedure&#39;: &#39;ISO22475d1v2006&#39;,
+  &#39;SoilUse&#39;: &#39;geenBodemgebruik&#39;,
+  &#39;StartDate&#39;: 739742.0,
+  &#39;StopCriterion&#39;: &#39;einddoel&#39;,
+  &#39;SurfaceLevel&#39;: 0.374,
+  &#39;SurveyProcedure&#39;: &#39;EN1997d2v2007&#39;,
+  &#39;SurveyPurpose&#39;: &#39;verkennendOnderzoek&#39;,
+  &#39;VertPosMethod&#39;: &#39;RTKGPS4tot10cm&#39;,
+  &#39;XCoordinate&#39;: 190889.296,
+  &#39;YCoordinate&#39;: 535882.968},
+ &#39;History&#39;: {&#39;BHRID&#39;: 12.0,
+  &#39;DateTime&#39;: nan,
+  &#39;EventData&#39;: [0, 0],
+  &#39;EventName&#39;: &#39;onbekend&#39;},
+ &#39;Layers&#39;: {&#39;Anthropogenic&#39;: 1,
+  &#39;BHRID&#39;: 12.0,
+  &#39;BoredDiameter&#39;: 100.0,
+  &#39;BoringTechnique&#39;: &#39;handDraaien&#39;,
+  &#39;Colour&#39;: &#39;lichtbruin&#39;,
+  &#39;LowBoundDterm&#39;: &#39;afgeleid&#39;,
+  &#39;LowBoundary&#39;: 0.9,
+  &#39;OrganicMatter&#39;: &#39;zwakOrganisch&#39;,
+  &#39;SandMedian&#39;: &#39;fijn150tot200um&#39;,
+  &#39;SoilName&#39;: &#39;zand&#39;,
+  &#39;TertiaryConstituent&#39;: &#39;puin&#39;,
+  &#39;UpBoundDterm&#39;: &#39;afgeleid&#39;,
+  &#39;UpBoundary&#39;: 0.0}}
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">bf</span><span class="o">.</span><span class="n">GLD</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;GLD000000150371&#39;: {&#39;Adm&#39;: {&#39;AccParty&#39;: &#39;51048329&#39;,
+   &#39;BROID&#39;: &#39;GLD000000150371&#39;,
+   &#39;DvRespParty&#39;: &#39;74503812&#39;,
+   &#39;GLDID&#39;: 1.0,
+   &#39;LastRgstrEvent&#39;: 1.0,
+   &#39;ObjRgstrDateTime&#39;: 740117.4259143518,
+   &#39;QualityRegime&#39;: 0},
+  &#39;Dossier&#39;: {&#39;GMWBROID&#39;: &#39;GMW000000099678&#39;, &#39;GMWID&#39;: 1.0, &#39;TubeNo&#39;: 1},
+  &#39;History&#39;: {&#39;DateTime&#39;: nan,
+   &#39;EventData&#39;: [0, 0],
+   &#39;EventName&#39;: &#39;Start registratie&#39;,
+   &#39;GLDID&#39;: 1.0,
+   &#39;SourceID&#39;: 0},
+  &#39;Source&#39;: {&#39;BaroID&#39;: 0,
+   &#39;Battery&#39;: nan,
+   &#39;Changes&#39;: [0, 0],
+   &#39;Drift&#39;: 0.0,
+   &#39;File&#39;: &#39;Controlemetingen&#39;,
+   &#39;GLDID&#39;: 1.0,
+   &#39;Gravity&#39;: nan,
+   &#39;Investigator&#39;: &#39;onbekend&#39;,
+   &#39;IsInterim&#39;: 0,
+   &#39;LoggerBrand&#39;: &#39;Keller&#39;,
+   &#39;LoggerDepth&#39;: 2.81,
+   &#39;LoggerSerial&#39;: &#39;1676500&#39;,
+   &#39;Measurements&#39;: [{&#39;DateTime&#39;: 739857.6569444444, &#39;RawValue&#39;: -1.595},
+    {&#39;DateTime&#39;: 739893.4402777777, &#39;RawValue&#39;: -1.555},
+    {&#39;DateTime&#39;: 740026.5820334954, &#39;RawValue&#39;: -1.04},
+    {&#39;DateTime&#39;: 739857.625, &#39;RawValue&#39;: 1.257654070854187},
+    {&#39;DateTime&#39;: 739857.6666666666, &#39;RawValue&#39;: 1.2408971786499023},
+    {&#39;DateTime&#39;: 739857.7083333334, &#39;RawValue&#39;: 1.2316030263900757},
+    {&#39;DateTime&#39;: 739857.75, &#39;RawValue&#39;: 1.2257577180862427},
+    {&#39;DateTime&#39;: 739857.7916666666, &#39;RawValue&#39;: 1.22139310836792},
+    {&#39;DateTime&#39;: 739857.8333333334, &#39;RawValue&#39;: 1.218353509902954},
+    {&#39;DateTime&#39;: 739857.875, &#39;RawValue&#39;: 1.2155672311782837},
+    {&#39;DateTime&#39;: 739857.9166666666, &#39;RawValue&#39;: 1.2151190042495728},
+    {&#39;DateTime&#39;: 739857.9583333334, &#39;RawValue&#39;: 1.2141448259353638},
+    {&#39;DateTime&#39;: 739858.0, &#39;RawValue&#39;: 1.214359164237976},
+    {&#39;DateTime&#39;: 739858.0416666666, &#39;RawValue&#39;: 1.2153334617614746},
+    {&#39;DateTime&#39;: 739858.0833333334, &#39;RawValue&#39;: 1.2145735025405884},
+    {&#39;DateTime&#39;: 739858.125, &#39;RawValue&#39;: 1.2157230377197266},
+    {&#39;DateTime&#39;: 739858.1666666666, &#39;RawValue&#39;: 1.2162880897521973},
+    {&#39;DateTime&#39;: 739858.2083333334, &#39;RawValue&#39;: 1.2173597812652588},
+    {&#39;DateTime&#39;: 739858.25, &#39;RawValue&#39;: 1.2181001901626587},
+    {&#39;DateTime&#39;: 739858.2916666666, &#39;RawValue&#39;: 1.218450903892517},
+    {&#39;DateTime&#39;: 739858.3333333334, &#39;RawValue&#39;: 1.2193667888641357},
+    {&#39;DateTime&#39;: 739858.375, &#39;RawValue&#39;: 1.2193862199783325},
+    {&#39;DateTime&#39;: 739858.4166666666, &#39;RawValue&#39;: 1.2195225954055786},
+    {&#39;DateTime&#39;: 739858.4583333334, &#39;RawValue&#39;: 1.2168726921081543},
+    {&#39;DateTime&#39;: 739858.5, &#39;RawValue&#39;: 1.215684175491333},
+    {&#39;DateTime&#39;: 739858.5416666666, &#39;RawValue&#39;: 1.212332844734192},
+    {&#39;DateTime&#39;: 739858.5833333334, &#39;RawValue&#39;: 1.211982011795044},
+    {&#39;DateTime&#39;: 739858.625, &#39;RawValue&#39;: 1.2085721492767334},
+    {&#39;DateTime&#39;: 739858.6666666666, &#39;RawValue&#39;: 1.208806037902832},
+    {&#39;DateTime&#39;: 739858.7083333334, &#39;RawValue&#39;: 1.205357313156128},
+    {&#39;DateTime&#39;: 739858.75, &#39;RawValue&#39;: 1.2048701047897339},
+    {&#39;DateTime&#39;: 739858.7916666666, &#39;RawValue&#39;: 1.203740119934082},
+    {&#39;DateTime&#39;: 739858.8333333334, &#39;RawValue&#39;: 1.2032140493392944},
+    {&#39;DateTime&#39;: 739858.875, &#39;RawValue&#39;: 1.2023955583572388},
+    {&#39;DateTime&#39;: 739858.9166666666, &#39;RawValue&#39;: 1.2029801607131958},
+    {&#39;DateTime&#39;: 739858.9583333334, &#39;RawValue&#39;: 1.2033114433288574},
+    {&#39;DateTime&#39;: 739859.0, &#39;RawValue&#39;: 1.203798532485962},
+    {&#39;DateTime&#39;: 739859.0416666666, &#39;RawValue&#39;: 1.2044219970703125},
+    {&#39;DateTime&#39;: 739859.0833333334, &#39;RawValue&#39;: 1.2050455808639526},
+    {&#39;DateTime&#39;: 739859.125, &#39;RawValue&#39;: 1.2056690454483032},
+    {&#39;DateTime&#39;: 739859.1666666666, &#39;RawValue&#39;: 1.2066043615341187},
+    {&#39;DateTime&#39;: 739859.2083333334, &#39;RawValue&#39;: 1.2066043615341187},
+    {&#39;DateTime&#39;: 739859.25, &#39;RawValue&#39;: 1.2067407369613647},
+    {&#39;DateTime&#39;: 739859.2916666666, &#39;RawValue&#39;: 1.2074421644210815},
+    {&#39;DateTime&#39;: 739859.3333333334, &#39;RawValue&#39;: 1.206916093826294},
+    {&#39;DateTime&#39;: 739859.375, &#39;RawValue&#39;: 1.2074421644210815},
+    {&#39;DateTime&#39;: 739859.4166666666, &#39;RawValue&#39;: 1.2068966627120972},
+    {&#39;DateTime&#39;: 739859.4583333334, &#39;RawValue&#39;: 1.2065068483352661},
+    {&#39;DateTime&#39;: 739859.5, &#39;RawValue&#39;: 1.2065458297729492},
+    {&#39;DateTime&#39;: 739859.5416666666, &#39;RawValue&#39;: 1.2041102647781372},
+    {&#39;DateTime&#39;: 739859.5833333334, &#39;RawValue&#39;: 1.2012850046157837},
+    {&#39;DateTime&#39;: 739859.625, &#39;RawValue&#39;: 1.1986545324325562},
+    {&#39;DateTime&#39;: 739859.6666666666, &#39;RawValue&#39;: 1.1959267854690552},
+    {&#39;DateTime&#39;: 739859.7083333334, &#39;RawValue&#39;: 1.1949135065078735},
+    {&#39;DateTime&#39;: 739859.75, &#39;RawValue&#39;: 1.193841814994812},
+    {&#39;DateTime&#39;: 739859.7916666666, &#39;RawValue&#39;: 1.1939197778701782},
+    {&#39;DateTime&#39;: 739859.8333333334, &#39;RawValue&#39;: 1.1929455995559692},
+    {&#39;DateTime&#39;: 739859.875, &#39;RawValue&#39;: 1.1926532983779907},
+    {&#39;DateTime&#39;: 739859.9166666666, &#39;RawValue&#39;: 1.1930235624313354},
+    {&#39;DateTime&#39;: 739859.9583333334, &#39;RawValue&#39;: 1.1938223838806152},
+    {&#39;DateTime&#39;: 739860.0, &#39;RawValue&#39;: 1.1943484544754028},
+    {&#39;DateTime&#39;: 739860.0416666666, &#39;RawValue&#39;: 1.1950500011444092},
+    {&#39;DateTime&#39;: 739860.0833333334, &#39;RawValue&#39;: 1.196043610572815},
+    {&#39;DateTime&#39;: 739860.125, &#39;RawValue&#39;: 1.1956928968429565},
+    {&#39;DateTime&#39;: 739860.1666666666, &#39;RawValue&#39;: 1.1973686218261719},
+    {&#39;DateTime&#39;: 739860.2083333334, &#39;RawValue&#39;: 1.1981284618377686},
+    {&#39;DateTime&#39;: 739860.25, &#39;RawValue&#39;: 1.1974855661392212},
+    {&#39;DateTime&#39;: 739860.2916666666, &#39;RawValue&#39;: 1.198323369026184},
+    {&#39;DateTime&#39;: 739860.3333333334, &#39;RawValue&#39;: 1.199102759361267},
+    {&#39;DateTime&#39;: 739860.375, &#39;RawValue&#39;: 1.1993365287780762},
+    {&#39;DateTime&#39;: 739860.4166666666, &#39;RawValue&#39;: 1.1998625993728638},
+    {&#39;DateTime&#39;: 739860.4583333334, &#39;RawValue&#39;: 1.1996872425079346},
+    {&#39;DateTime&#39;: 739860.5, &#39;RawValue&#39;: 1.19925856590271},
+    {&#39;DateTime&#39;: 739860.5416666666, &#39;RawValue&#39;: 1.1990052461624146},
+    {&#39;DateTime&#39;: 739860.5833333334, &#39;RawValue&#39;: 1.1978557109832764},
+    {&#39;DateTime&#39;: 739860.625, &#39;RawValue&#39;: 1.1974270343780518},
+    {&#39;DateTime&#39;: 739860.6666666666, &#39;RawValue&#39;: 1.1946407556533813},
+    {&#39;DateTime&#39;: 739860.7083333334, &#39;RawValue&#39;: 1.1941536664962769},
+    {&#39;DateTime&#39;: 739860.75, &#39;RawValue&#39;: 1.1933937072753906},
+    {&#39;DateTime&#39;: 739860.7916666666, &#39;RawValue&#39;: 1.1925559043884277},
+    {&#39;DateTime&#39;: 739860.8333333334, &#39;RawValue&#39;: 1.19282865524292},
+    {&#39;DateTime&#39;: 739860.875, &#39;RawValue&#39;: 1.192419409751892},
+    {&#39;DateTime&#39;: 739860.9166666666, &#39;RawValue&#39;: 1.1926144361495972},
+    {&#39;DateTime&#39;: 739860.9583333334, &#39;RawValue&#39;: 1.1940367221832275},
+    {&#39;DateTime&#39;: 739861.0, &#39;RawValue&#39;: 1.1947576999664307},
+    {&#39;DateTime&#39;: 739861.0416666666, &#39;RawValue&#39;: 1.1964918375015259},
+    {&#39;DateTime&#39;: 739861.0833333334, &#39;RawValue&#39;: 1.1964722871780396},
+    {&#39;DateTime&#39;: 739861.125, &#39;RawValue&#39;: 1.1978167295455933},
+    {&#39;DateTime&#39;: 739861.1666666666, &#39;RawValue&#39;: 1.1998625993728638},
+    {&#39;DateTime&#39;: 739861.2083333334, &#39;RawValue&#39;: 1.2006419897079468},
+    {&#39;DateTime&#39;: 739861.25, &#39;RawValue&#39;: 1.2024930715560913},
+    {&#39;DateTime&#39;: 739861.2916666666, &#39;RawValue&#39;: 1.2040324211120605},
+    {&#39;DateTime&#39;: 739861.3333333334, &#39;RawValue&#39;: 1.2046558856964111},
+    {&#39;DateTime&#39;: 739861.375, &#39;RawValue&#39;: 1.205727458000183},
+    {&#39;DateTime&#39;: 739861.4166666666, &#39;RawValue&#39;: 1.2066432237625122},
+    {&#39;DateTime&#39;: 739861.4583333334, &#39;RawValue&#39;: 1.2066432237625122},
+    {&#39;DateTime&#39;: 739861.5, &#39;RawValue&#39;: 1.2068771123886108},
+    {&#39;DateTime&#39;: 739861.5416666666, &#39;RawValue&#39;: 1.2048701047897339},
+    {&#39;DateTime&#39;: 739861.5833333334, &#39;RawValue&#39;: 1.2032334804534912},
+    {&#39;DateTime&#39;: 739861.625, &#39;RawValue&#39;: 1.2024540901184082},
+    {&#39;DateTime&#39;: 739861.6666666666, &#39;RawValue&#39;: 1.2073252201080322},
+    {&#39;DateTime&#39;: 739861.7083333334, &#39;RawValue&#39;: 1.209137201309204},
+    {&#39;DateTime&#39;: 739861.75, &#39;RawValue&#39;: 1.2104427814483643},
+    {&#39;DateTime&#39;: 739861.7916666666, &#39;RawValue&#39;: 1.2131901979446411},
+    {&#39;DateTime&#39;: 739861.8333333334, &#39;RawValue&#39;: 1.2133654356002808},
+    {&#39;DateTime&#39;: 739861.875, &#39;RawValue&#39;: 1.2129757404327393},
+    {&#39;DateTime&#39;: 739861.9166666666, &#39;RawValue&#39;: 1.2122547626495361},
+    {&#39;DateTime&#39;: 739861.9583333334, &#39;RawValue&#39;: 1.21280038356781},
+    {&#39;DateTime&#39;: 739862.0, &#39;RawValue&#39;: 1.2141058444976807},
+    {&#39;DateTime&#39;: 739862.0416666666, &#39;RawValue&#39;: 1.2139500379562378},
+    {&#39;DateTime&#39;: 739862.0833333334, &#39;RawValue&#39;: 1.2146904468536377},
+    {&#39;DateTime&#39;: 739862.125, &#39;RawValue&#39;: 1.2146124839782715},
+    {&#39;DateTime&#39;: 739862.1666666666, &#39;RawValue&#39;: 1.2155476808547974},
+    {&#39;DateTime&#39;: 739862.2083333334, &#39;RawValue&#39;: 1.2159569263458252},
+    {&#39;DateTime&#39;: 739862.25, &#39;RawValue&#39;: 1.2163660526275635},
+    {&#39;DateTime&#39;: 739862.2916666666, &#39;RawValue&#39;: 1.21632719039917},
+    {&#39;DateTime&#39;: 739862.3333333334, &#39;RawValue&#39;: 1.2168726921081543},
+    {&#39;DateTime&#39;: 739862.375, &#39;RawValue&#39;: 1.2171260118484497},
+    {&#39;DateTime&#39;: 739862.4166666666, &#39;RawValue&#39;: 1.2172623872756958},
+    {&#39;DateTime&#39;: 739862.4583333334, &#39;RawValue&#39;: 1.2170090675354004},
+    {&#39;DateTime&#39;: 739862.5, &#39;RawValue&#39;: 1.215878963470459},
+    {&#39;DateTime&#39;: 739862.5416666666, &#39;RawValue&#39;: 1.2144371271133423},
+    {&#39;DateTime&#39;: 739862.5833333334, &#39;RawValue&#39;: 1.2111637592315674},
+    {&#39;DateTime&#39;: 739862.625, &#39;RawValue&#39;: 1.211787223815918},
+    {&#39;DateTime&#39;: 739862.6666666666, &#39;RawValue&#39;: 1.2075589895248413},
+    {&#39;DateTime&#39;: 739862.7083333334, &#39;RawValue&#39;: 1.2041882276535034},
+    {&#39;DateTime&#39;: 739862.75, &#39;RawValue&#39;: 1.2031750679016113},
+    {&#39;DateTime&#39;: 739862.7916666666, &#39;RawValue&#39;: 1.2018500566482544},
+    {&#39;DateTime&#39;: 739862.8333333334, &#39;RawValue&#39;: 1.2008953094482422},
+    {&#39;DateTime&#39;: 739862.875, &#39;RawValue&#39;: 1.2008953094482422},
+    {&#39;DateTime&#39;: 739862.9166666666, &#39;RawValue&#39;: 1.2019474506378174},
+    {&#39;DateTime&#39;: 739862.9583333334, &#39;RawValue&#39;: 1.2014799118041992},
+    {&#39;DateTime&#39;: 739863.0, &#39;RawValue&#39;: 1.203155517578125},
+    {&#39;DateTime&#39;: 739863.0416666666, &#39;RawValue&#39;: 1.2046363353729248},
+    {&#39;DateTime&#39;: 739863.0833333334, &#39;RawValue&#39;: 1.206039309501648},
+    {&#39;DateTime&#39;: 739863.125, &#39;RawValue&#39;: 1.207013487815857},
+    {&#39;DateTime&#39;: 739863.1666666666, &#39;RawValue&#39;: 1.2077538967132568},
+    {&#39;DateTime&#39;: 739863.2083333334, &#39;RawValue&#39;: 1.2089229822158813},
+    {&#39;DateTime&#39;: 739863.25, &#39;RawValue&#39;: 1.2100920677185059},
+    {&#39;DateTime&#39;: 739863.2916666666, &#39;RawValue&#39;: 1.2107155323028564},
+    {&#39;DateTime&#39;: 739863.3333333334, &#39;RawValue&#39;: 1.210559606552124},
+    {&#39;DateTime&#39;: 739863.375, &#39;RawValue&#39;: 1.2114949226379395},
+    {&#39;DateTime&#39;: 739863.4166666666, &#39;RawValue&#39;: 1.2112221717834473},
+    {&#39;DateTime&#39;: 739863.4583333334, &#39;RawValue&#39;: 1.2135213613510132},
+    {&#39;DateTime&#39;: 739863.5, &#39;RawValue&#39;: 1.2158985137939453},
+    {&#39;DateTime&#39;: 739863.5416666666, &#39;RawValue&#39;: 1.2168726921081543},
+    {&#39;DateTime&#39;: 739863.5833333334, &#39;RawValue&#39;: 1.2160348892211914},
+    {&#39;DateTime&#39;: 739863.625, &#39;RawValue&#39;: 1.2145345211029053},
+    {&#39;DateTime&#39;: 739863.6666666666, &#39;RawValue&#39;: 1.2122547626495361},
+    {&#39;DateTime&#39;: 739863.7083333334, &#39;RawValue&#39;: 1.2100920677185059},
+    {&#39;DateTime&#39;: 739863.75, &#39;RawValue&#39;: 1.208669662475586},
+    {&#39;DateTime&#39;: 739863.7916666666, &#39;RawValue&#39;: 1.2090399265289307},
+    {&#39;DateTime&#39;: 739863.8333333334, &#39;RawValue&#39;: 1.2074031829833984},
+    {&#39;DateTime&#39;: 739863.875, &#39;RawValue&#39;: 1.2079098224639893},
+    {&#39;DateTime&#39;: 739863.9166666666, &#39;RawValue&#39;: 1.2074031829833984},
+    {&#39;DateTime&#39;: 739863.9583333334, &#39;RawValue&#39;: 1.2079682350158691},
+    {&#39;DateTime&#39;: 739864.0, &#39;RawValue&#39;: 1.2088255882263184},
+    {&#39;DateTime&#39;: 739864.0416666666, &#39;RawValue&#39;: 1.2086306810379028},
+    {&#39;DateTime&#39;: 739864.0833333334, &#39;RawValue&#39;: 1.2098191976547241},
+    {&#39;DateTime&#39;: 739864.125, &#39;RawValue&#39;: 1.2103453874588013},
+    {&#39;DateTime&#39;: 739864.1666666666, &#39;RawValue&#39;: 1.2111246585845947},
+    {&#39;DateTime&#39;: 739864.2083333334, &#39;RawValue&#39;: 1.2118456363677979},
+    {&#39;DateTime&#39;: 739864.25, &#39;RawValue&#39;: 1.2116312980651855},
+    {&#39;DateTime&#39;: 739864.2916666666, &#39;RawValue&#39;: 1.2122159004211426},
+    {&#39;DateTime&#39;: 739864.3333333334, &#39;RawValue&#39;: 1.2122547626495361},
+    {&#39;DateTime&#39;: 739864.375, &#39;RawValue&#39;: 1.2129367589950562},
+    {&#39;DateTime&#39;: 739864.4166666666, &#39;RawValue&#39;: 1.2111637592315674},
+    {&#39;DateTime&#39;: 739864.4583333334, &#39;RawValue&#39;: 1.2090593576431274},
+    {&#39;DateTime&#39;: 739864.5, &#39;RawValue&#39;: 1.2072278261184692},
+    {&#39;DateTime&#39;: 739864.5416666666, &#39;RawValue&#39;: 1.203798532485962},
+    {&#39;DateTime&#39;: 739864.5833333334, &#39;RawValue&#39;: 1.2014409303665161},
+    {&#39;DateTime&#39;: 739864.625, &#39;RawValue&#39;: 1.2007395029067993},
+    {&#39;DateTime&#39;: 739864.6666666666, &#39;RawValue&#39;: 1.1981480121612549},
+    {&#39;DateTime&#39;: 739864.7083333334, &#39;RawValue&#39;: 1.196082592010498},
+    {&#39;DateTime&#39;: 739864.75, &#39;RawValue&#39;: 1.1951863765716553},
+    {&#39;DateTime&#39;: 739864.7916666666, &#39;RawValue&#39;: 1.1944068670272827},
+    {&#39;DateTime&#39;: 739864.8333333334, &#39;RawValue&#39;: 1.195108413696289},
+    {&#39;DateTime&#39;: 739864.875, &#39;RawValue&#39;: 1.196277379989624},
+    {&#39;DateTime&#39;: 739864.9166666666, &#39;RawValue&#39;: 1.1969983577728271},
+    {&#39;DateTime&#39;: 739864.9583333334, &#39;RawValue&#39;: 1.1978946924209595},
+    {&#39;DateTime&#39;: 739865.0, &#39;RawValue&#39;: 1.1990443468093872},
+    {&#39;DateTime&#39;: 739865.0416666666, &#39;RawValue&#39;: 1.2009148597717285},
+    {&#39;DateTime&#39;: 739865.0833333334, &#39;RawValue&#39;: 1.2024345397949219},
+    {&#39;DateTime&#39;: 739865.125, &#39;RawValue&#39;: 1.2033114433288574},
+    {&#39;DateTime&#39;: 739865.1666666666, &#39;RawValue&#39;: 1.2035841941833496},
+    {&#39;DateTime&#39;: 739865.2083333334, &#39;RawValue&#39;: 1.2042272090911865},
+    {&#39;DateTime&#39;: 739865.25, &#39;RawValue&#39;: 1.2049676179885864},
+    {&#39;DateTime&#39;: 739865.2916666666, &#39;RawValue&#39;: 1.2040128707885742},
+    {&#39;DateTime&#39;: 739865.3333333334, &#39;RawValue&#39;: 1.204071283340454},
+    {&#39;DateTime&#39;: 739865.375, &#39;RawValue&#39;: 1.2052209377288818},
+    {&#39;DateTime&#39;: 739865.4166666666, &#39;RawValue&#39;: 1.2035841941833496},
+    {&#39;DateTime&#39;: 739865.4583333334, &#39;RawValue&#39;: 1.200953722000122},
+    {&#39;DateTime&#39;: 739865.5, &#39;RawValue&#39;: 1.1981090307235718},
+    {&#39;DateTime&#39;: 739865.5416666666, &#39;RawValue&#39;: 1.1949330568313599},
+    {&#39;DateTime&#39;: 739865.5833333334, &#39;RawValue&#39;: 1.1910555362701416},
+    {&#39;DateTime&#39;: 739865.625, &#39;RawValue&#39;: 1.187957525253296},
+    {&#39;DateTime&#39;: 739865.6666666666, &#39;RawValue&#39;: 1.186203956604004},
+    {&#39;DateTime&#39;: 739865.7083333334, &#39;RawValue&#39;: 1.1836514472961426},
+    {&#39;DateTime&#39;: 739865.75, &#39;RawValue&#39;: 1.1813328266143799},
+    {&#39;DateTime&#39;: 739865.7916666666, &#39;RawValue&#39;: 1.1804169416427612},
+    {&#39;DateTime&#39;: 739865.8333333334, &#39;RawValue&#39;: 1.1790920495986938},
+    {&#39;DateTime&#39;: 739865.875, &#39;RawValue&#39;: 1.1787997484207153},
+    {&#39;DateTime&#39;: 739865.9166666666, &#39;RawValue&#39;: 1.1795791387557983},
+    {&#39;DateTime&#39;: 739865.9583333334, &#39;RawValue&#39;: 1.1808456182479858},
+    {&#39;DateTime&#39;: 739866.0, &#39;RawValue&#39;: 1.1820148229599},
+    {&#39;DateTime&#39;: 739866.0416666666, &#39;RawValue&#39;: 1.1830668449401855},
+    {&#39;DateTime&#39;: 739866.0833333334, &#39;RawValue&#39;: 1.1852881908416748},
+    {&#39;DateTime&#39;: 739866.125, &#39;RawValue&#39;: 1.186671495437622},
+    {&#39;DateTime&#39;: 739866.1666666666, &#39;RawValue&#39;: 1.1882692575454712},
+    {&#39;DateTime&#39;: 739866.2083333334, &#39;RawValue&#39;: 1.190393090248108},
+    {&#39;DateTime&#39;: 739866.25, &#39;RawValue&#39;: 1.1915621757507324},
+    {&#39;DateTime&#39;: 739866.2916666666, &#39;RawValue&#39;: 1.19282865524292},
+    {&#39;DateTime&#39;: 739866.3333333334, &#39;RawValue&#39;: 1.194387435913086},
+    {&#39;DateTime&#39;: 739866.375, &#39;RawValue&#39;: 1.1959267854690552},
+    {&#39;DateTime&#39;: 739866.4166666666, &#39;RawValue&#39;: 1.1976219415664673},
+    {&#39;DateTime&#39;: 739866.4583333334, &#39;RawValue&#39;: 1.196959376335144},
+    {&#39;DateTime&#39;: 739866.5, &#39;RawValue&#39;: 1.1945432424545288},
+    {&#39;DateTime&#39;: 739866.5416666666, &#39;RawValue&#39;: 1.1925753355026245},
+    {&#39;DateTime&#39;: 739866.5833333334, &#39;RawValue&#39;: 1.1910945177078247},
+    {&#39;DateTime&#39;: 739866.625, &#39;RawValue&#39;: 1.1889317035675049},
+    {&#39;DateTime&#39;: 739866.6666666666, &#39;RawValue&#39;: 1.1883277893066406},
+    {&#39;DateTime&#39;: 739866.7083333334, &#39;RawValue&#39;: 1.1831448078155518},
+    {&#39;DateTime&#39;: 739866.75, &#39;RawValue&#39;: 1.1811379194259644},
+    {&#39;DateTime&#39;: 739866.7916666666, &#39;RawValue&#39;: 1.179559588432312},
+    {&#39;DateTime&#39;: 739866.8333333334, &#39;RawValue&#39;: 1.1793453693389893},
+    {&#39;DateTime&#39;: 739866.875, &#39;RawValue&#39;: 1.179695963859558},
+    {&#39;DateTime&#39;: 739866.9166666666, &#39;RawValue&#39;: 1.180046796798706},
+    {&#39;DateTime&#39;: 739866.9583333334, &#39;RawValue&#39;: 1.1812158823013306},
+    {&#39;DateTime&#39;: 739867.0, &#39;RawValue&#39;: 1.181702971458435},
+    {&#39;DateTime&#39;: 739867.0416666666, &#39;RawValue&#39;: 1.184138536453247},
+    {&#39;DateTime&#39;: 739867.0833333334, &#39;RawValue&#39;: 1.18559992313385},
+    {&#39;DateTime&#39;: 739867.125, &#39;RawValue&#39;: 1.1877237558364868},
+    {&#39;DateTime&#39;: 739867.1666666666, &#39;RawValue&#39;: 1.1891655921936035},
+    {&#39;DateTime&#39;: 739867.2083333334, &#39;RawValue&#39;: 1.191016674041748},
+    {&#39;DateTime&#39;: 739867.25, &#39;RawValue&#39;: 1.1924389600753784},
+    {&#39;DateTime&#39;: 739867.2916666666, &#39;RawValue&#39;: 1.1940172910690308},
+    {&#39;DateTime&#39;: 739867.3333333334, &#39;RawValue&#39;: 1.195166826248169},
+    {&#39;DateTime&#39;: 739867.375, &#39;RawValue&#39;: 1.1967060565948486},
+    {&#39;DateTime&#39;: 739867.4166666666, &#39;RawValue&#39;: 1.1949330568313599},
+    {&#39;DateTime&#39;: 739867.4583333334, &#39;RawValue&#39;: 1.1925169229507446},
+    {&#39;DateTime&#39;: 739867.5, &#39;RawValue&#39;: 1.188035488128662},
+    {&#39;DateTime&#39;: 739867.5416666666, &#39;RawValue&#39;: 1.1861844062805176},
+    {&#39;DateTime&#39;: 739867.5833333334, &#39;RawValue&#39;: 1.1848009824752808},
+    {&#39;DateTime&#39;: 739867.625, &#39;RawValue&#39;: 1.1828135251998901},
+    {&#39;DateTime&#39;: 739867.6666666666, &#39;RawValue&#39;: 1.1806508302688599},
+    {&#39;DateTime&#39;: 739867.7083333334, &#39;RawValue&#39;: 1.1795207262039185},
+    {&#39;DateTime&#39;: 739867.75, &#39;RawValue&#39;: 1.1780203580856323},
+    {&#39;DateTime&#39;: 739867.7916666666, &#39;RawValue&#39;: 1.1782736778259277},
+    {&#39;DateTime&#39;: 739867.8333333334, &#39;RawValue&#39;: 1.1767538785934448},
+    {&#39;DateTime&#39;: 739867.875, &#39;RawValue&#39;: 1.1765395402908325},
+    {&#39;DateTime&#39;: 739867.9166666666, &#39;RawValue&#39;: 1.176110863685608},
+    {&#39;DateTime&#39;: 739867.9583333334, &#39;RawValue&#39;: 1.1769486665725708},
+    {&#39;DateTime&#39;: 739868.0, &#39;RawValue&#39;: 1.1776890754699707},
+    {&#39;DateTime&#39;: 739868.0416666666, &#39;RawValue&#39;: 1.1789751052856445},
+    {&#39;DateTime&#39;: 739868.0833333334, &#39;RawValue&#39;: 1.1802221536636353},
+    {&#39;DateTime&#39;: 739868.125, &#39;RawValue&#39;: 1.1811769008636475},
+    {&#39;DateTime&#39;: 739868.1666666666, &#39;RawValue&#39;: 1.1820536851882935},
+    {&#39;DateTime&#39;: 739868.2083333334, &#39;RawValue&#39;: 1.1835345029830933},
+    {&#39;DateTime&#39;: 739868.25, &#39;RawValue&#39;: 1.1857167482376099},
+    {&#39;DateTime&#39;: 739868.2916666666, &#39;RawValue&#39;: 1.1858726739883423},
+    {&#39;DateTime&#39;: 739868.3333333334, &#39;RawValue&#39;: 1.1872755289077759},
+    {&#39;DateTime&#39;: 739868.375, &#39;RawValue&#39;: 1.1875678300857544},
+    {&#39;DateTime&#39;: 739868.4166666666, &#39;RawValue&#39;: 1.1888148784637451},
+    {&#39;DateTime&#39;: 739868.4583333334, &#39;RawValue&#39;: 1.1891460418701172},
+    {&#39;DateTime&#39;: 739868.5, &#39;RawValue&#39;: 1.1905100345611572},
+    {&#39;DateTime&#39;: 739868.5416666666, &#39;RawValue&#39;: 1.188035488128662},
+    {&#39;DateTime&#39;: 739868.5833333334, &#39;RawValue&#39;: 1.186476707458496},
+    {&#39;DateTime&#39;: 739868.625, &#39;RawValue&#39;: 1.1823070049285889},
+    {&#39;DateTime&#39;: 739868.6666666666, &#39;RawValue&#39;: 1.1831448078155518},
+    {&#39;DateTime&#39;: 739868.7083333334, &#39;RawValue&#39;: 1.178643822669983},
+    {&#39;DateTime&#39;: 739868.75, &#39;RawValue&#39;: 1.1765785217285156},
+    {&#39;DateTime&#39;: 739868.7916666666, &#39;RawValue&#39;: 1.1757797002792358},
+    {&#39;DateTime&#39;: 739868.8333333334, &#39;RawValue&#39;: 1.1752926111221313},
+    {&#39;DateTime&#39;: 739868.875, &#39;RawValue&#39;: 1.1765199899673462},
+    {&#39;DateTime&#39;: 739868.9166666666, &#39;RawValue&#39;: 1.1778645515441895},
+    {&#39;DateTime&#39;: 739868.9583333334, &#39;RawValue&#39;: 1.1792478561401367},
+    {&#39;DateTime&#39;: 739869.0, &#39;RawValue&#39;: 1.1806702613830566},
+    {&#39;DateTime&#39;: 739869.0416666666, &#39;RawValue&#39;: 1.1830668449401855},
+    {&#39;DateTime&#39;: 739869.0833333334, &#39;RawValue&#39;: 1.1850348711013794},
+    {&#39;DateTime&#39;: 739869.125, &#39;RawValue&#39;: 1.18708074092865},
+    {&#39;DateTime&#39;: 739869.1666666666, &#39;RawValue&#39;: 1.1894187927246094},
+    {&#39;DateTime&#39;: 739869.2083333334, &#39;RawValue&#39;: 1.191016674041748},
+    {&#39;DateTime&#39;: 739869.25, &#39;RawValue&#39;: 1.1924585103988647},
+    {&#39;DateTime&#39;: 739869.2916666666, &#39;RawValue&#39;: 1.1952447891235352},
+    {&#39;DateTime&#39;: 739869.3333333334, &#39;RawValue&#39;: 1.195751428604126},
+    {&#39;DateTime&#39;: 739869.375, &#39;RawValue&#39;: 1.1958292722702026},
+    {&#39;DateTime&#39;: 739869.4166666666, &#39;RawValue&#39;: 1.198420763015747},
+    {&#39;DateTime&#39;: 739869.4583333334, &#39;RawValue&#39;: 1.200719952583313},
+    {&#39;DateTime&#39;: 739869.5, &#39;RawValue&#39;: 1.2041687965393066},
+    {&#39;DateTime&#39;: 739869.5416666666, &#39;RawValue&#39;: 1.2088840007781982},
+    {&#39;DateTime&#39;: 739869.5833333334, &#39;RawValue&#39;: 1.2122937440872192},
+    {&#39;DateTime&#39;: 739869.625, &#39;RawValue&#39;: 1.2169312238693237},
+    {&#39;DateTime&#39;: 739869.6666666666, &#39;RawValue&#39;: 1.218996524810791},
+    {&#39;DateTime&#39;: 739869.7083333334, &#39;RawValue&#39;: 1.220983862876892},
+    {&#39;DateTime&#39;: 739869.75, &#39;RawValue&#39;: 1.2228155136108398},
+    {&#39;DateTime&#39;: 739869.7916666666, &#39;RawValue&#39;: 1.2243742942810059},
+    {&#39;DateTime&#39;: 739869.8333333334, &#39;RawValue&#39;: 1.225582242012024},
+    {&#39;DateTime&#39;: 739869.875, &#39;RawValue&#39;: 1.2250951528549194},
+    {&#39;DateTime&#39;: 739869.9166666666, &#39;RawValue&#39;: 1.22571861743927},
+    {&#39;DateTime&#39;: 739869.9583333334, &#39;RawValue&#39;: 1.2268682718276978},
+    {&#39;DateTime&#39;: 739870.0, &#39;RawValue&#39;: 1.2273359298706055},
+    {&#39;DateTime&#39;: 739870.0416666666, &#39;RawValue&#39;: 1.229284405708313},
+    {&#39;DateTime&#39;: 739870.0833333334, &#39;RawValue&#39;: 1.2301807403564453},
+    {&#39;DateTime&#39;: 739870.125, &#39;RawValue&#39;: 1.2313107252120972},
+    {&#39;DateTime&#39;: 739870.1666666666, &#39;RawValue&#39;: 1.2322850227355957},
+    {&#39;DateTime&#39;: 739870.2083333334, &#39;RawValue&#39;: 1.2332592010498047},
+    {&#39;DateTime&#39;: 739870.25, &#39;RawValue&#39;: 1.232499361038208},
+    {&#39;DateTime&#39;: 739870.2916666666, &#39;RawValue&#39;: 1.2342140674591064},
+    {&#39;DateTime&#39;: 739870.3333333334, &#39;RawValue&#39;: 1.2359092235565186},
+    {&#39;DateTime&#39;: 739870.375, &#39;RawValue&#39;: 1.2375069856643677},
+    {&#39;DateTime&#39;: 739870.4166666666, &#39;RawValue&#39;: 1.2380914688110352},
+    {&#39;DateTime&#39;: 739870.4583333334, &#39;RawValue&#39;: 1.2405660152435303},
+    {&#39;DateTime&#39;: 739870.5, &#39;RawValue&#39;: 1.240390658378601},
+    {&#39;DateTime&#39;: 739870.5416666666, &#39;RawValue&#39;: 1.239124059677124},
+    {&#39;DateTime&#39;: 739870.5833333334, &#39;RawValue&#39;: 1.2394553422927856},
+    {&#39;DateTime&#39;: 739870.625, &#39;RawValue&#39;: 1.2372146844863892},
+    {&#39;DateTime&#39;: 739870.6666666666, &#39;RawValue&#39;: 1.2372925281524658},
+    {&#39;DateTime&#39;: 739870.7083333334, &#39;RawValue&#39;: 1.2367860078811646},
+    {&#39;DateTime&#39;: 739870.75, &#39;RawValue&#39;: 1.2352662086486816},
+    {&#39;DateTime&#39;: 739870.7916666666, &#39;RawValue&#39;: 1.235032320022583},
+    {&#39;DateTime&#39;: 739870.8333333334, &#39;RawValue&#39;: 1.2352856397628784},
+    {&#39;DateTime&#39;: 739870.875, &#39;RawValue&#39;: 1.2353246212005615},
+    {&#39;DateTime&#39;: 739870.9166666666, &#39;RawValue&#39;: 1.2356364727020264},
+    {&#39;DateTime&#39;: 739870.9583333334, &#39;RawValue&#39;: 1.2362987995147705},
+    {&#39;DateTime&#39;: 739871.0, &#39;RawValue&#39;: 1.23703932762146},
+    {&#39;DateTime&#39;: 739871.0416666666, &#39;RawValue&#39;: 1.238052487373352},
+    {&#39;DateTime&#39;: 739871.0833333334, &#39;RawValue&#39;: 1.2378770112991333},
+    {&#39;DateTime&#39;: 739871.125, &#39;RawValue&#39;: 1.238149881362915},
+    {&#39;DateTime&#39;: 739871.1666666666, &#39;RawValue&#39;: 1.238987684249878},
+    {&#39;DateTime&#39;: 739871.2083333334, &#39;RawValue&#39;: 1.2401373386383057},
+    {&#39;DateTime&#39;: 739871.25, &#39;RawValue&#39;: 1.2405270338058472},
+    {&#39;DateTime&#39;: 739871.2916666666, &#39;RawValue&#39;: 1.2409751415252686},
+    {&#39;DateTime&#39;: 739871.3333333334, &#39;RawValue&#39;: 1.242007851600647},
+    {&#39;DateTime&#39;: 739871.375, &#39;RawValue&#39;: 1.242923617362976},
+    {&#39;DateTime&#39;: 739871.4166666666, &#39;RawValue&#39;: 1.2429625988006592},
+    {&#39;DateTime&#39;: 739871.4583333334, &#39;RawValue&#39;: 1.2424559593200684},
+    {&#39;DateTime&#39;: 739871.5, &#39;RawValue&#39;: 1.239377498626709},
+    {&#39;DateTime&#39;: 739871.5416666666, &#39;RawValue&#39;: 1.2369807958602905},
+    {&#39;DateTime&#39;: 739871.5833333334, &#39;RawValue&#39;: 1.233921766281128},
+    {&#39;DateTime&#39;: 739871.625, &#39;RawValue&#39;: 1.2321680784225464},
+    {&#39;DateTime&#39;: 739871.6666666666, &#39;RawValue&#39;: 1.2286609411239624},
+    {&#39;DateTime&#39;: 739871.7083333334, &#39;RawValue&#39;: 1.2291284799575806},
+    {&#39;DateTime&#39;: 739871.75, &#39;RawValue&#39;: 1.2277841567993164},
+    {&#39;DateTime&#39;: 739871.7916666666, &#39;RawValue&#39;: 1.2269073724746704},
+    {&#39;DateTime&#39;: 739871.8333333334, &#39;RawValue&#39;: 1.2274527549743652},
+    {&#39;DateTime&#39;: 739871.875, &#39;RawValue&#39;: 1.2274527549743652},
+    {&#39;DateTime&#39;: 739871.9166666666, &#39;RawValue&#39;: 1.2292064428329468},
+    {&#39;DateTime&#39;: 739871.9583333334, &#39;RawValue&#39;: 1.230102777481079},
+    {&#39;DateTime&#39;: 739872.0, &#39;RawValue&#39;: 1.231174349784851},
+    {&#39;DateTime&#39;: 739872.0416666666, &#39;RawValue&#39;: 1.2324408292770386},
+    {&#39;DateTime&#39;: 739872.0833333334, &#39;RawValue&#39;: 1.232635736465454},
+    {&#39;DateTime&#39;: 739872.125, &#39;RawValue&#39;: 1.2336100339889526},
+    {&#39;DateTime&#39;: 739872.1666666666, &#39;RawValue&#39;: 1.2340971231460571},
+    {&#39;DateTime&#39;: 739872.2083333334, &#39;RawValue&#39;: 1.2353246212005615},
+    {&#39;DateTime&#39;: 739872.25, &#39;RawValue&#39;: 1.2356559038162231},
+    {&#39;DateTime&#39;: 739872.2916666666, &#39;RawValue&#39;: 1.2358506917953491},
+    {&#39;DateTime&#39;: 739872.3333333334, &#39;RawValue&#39;: 1.2365715503692627},
+    {&#39;DateTime&#39;: 739872.375, &#39;RawValue&#39;: 1.236201524734497},
+    {&#39;DateTime&#39;: 739872.4166666666, &#39;RawValue&#39;: 1.2351492643356323},
+    {&#39;DateTime&#39;: 739872.4583333334, &#39;RawValue&#39;: 1.2353830337524414},
+    {&#39;DateTime&#39;: 739872.5, &#39;RawValue&#39;: 1.2345062494277954},
+    {&#39;DateTime&#39;: 739872.5416666666, &#39;RawValue&#39;: 1.2361040115356445},
+    {&#39;DateTime&#39;: 739872.5833333334, &#39;RawValue&#39;: 1.233765959739685},
+    {&#39;DateTime&#39;: 739872.625, &#39;RawValue&#39;: 1.2342140674591064},
+    {&#39;DateTime&#39;: 739872.6666666666, &#39;RawValue&#39;: 1.2322070598602295},
+    {&#39;DateTime&#39;: 739872.7083333334, &#39;RawValue&#39;: 1.2298104763031006},
+    {&#39;DateTime&#39;: 739872.75, &#39;RawValue&#39;: 1.228349208831787},
+    {&#39;DateTime&#39;: 739872.7916666666, &#39;RawValue&#39;: 1.226790428161621},
+    {&#39;DateTime&#39;: 739872.8333333334, &#39;RawValue&#39;: 1.2261472940444946},
+    {&#39;DateTime&#39;: 739872.875, &#39;RawValue&#39;: 1.226615071296692},
+    {&#39;DateTime&#39;: 739872.9166666666, &#39;RawValue&#39;: 1.2268292903900146},
+    {&#39;DateTime&#39;: 739872.9583333334, &#39;RawValue&#39;: 1.2282127141952515},
+    {&#39;DateTime&#39;: 739873.0, &#39;RawValue&#39;: 1.2288557291030884},
+    {&#39;DateTime&#39;: 739873.0416666666, &#39;RawValue&#39;: 1.2297325134277344},
+    {&#39;DateTime&#39;: 739873.0833333334, &#39;RawValue&#39;: 1.2310965061187744},
+    {&#39;DateTime&#39;: 739873.125, &#39;RawValue&#39;: 1.2319732904434204},
+    {&#39;DateTime&#39;: 739873.1666666666, &#39;RawValue&#39;: 1.2320512533187866},
+    {&#39;DateTime&#39;: 739873.2083333334, &#39;RawValue&#39;: 1.233376145362854},
+    {&#39;DateTime&#39;: 739873.25, &#39;RawValue&#39;: 1.2352077960968018},
+    {&#39;DateTime&#39;: 739873.2916666666, &#39;RawValue&#39;: 1.2353246212005615},
+    {&#39;DateTime&#39;: 739873.3333333334, &#39;RawValue&#39;: 1.2356364727020264},
+    {&#39;DateTime&#39;: 739873.375, &#39;RawValue&#39;: 1.2367274761199951},
+    {&#39;DateTime&#39;: 739873.4166666666, &#39;RawValue&#39;: 1.237234115600586},
+    {&#39;DateTime&#39;: 739873.4583333334, &#39;RawValue&#39;: 1.2364157438278198},
+    {&#39;DateTime&#39;: 739873.5, &#39;RawValue&#39;: 1.2350128889083862},
+    {&#39;DateTime&#39;: 739873.5416666666, &#39;RawValue&#39;: 1.2337853908538818},
+    {&#39;DateTime&#39;: 739873.5833333334, &#39;RawValue&#39;: 1.231719970703125},
+    {&#39;DateTime&#39;: 739873.625, &#39;RawValue&#39;: 1.231174349784851},
+    {&#39;DateTime&#39;: 739873.6666666666, &#39;RawValue&#39;: 1.2293429374694824},
+    {&#39;DateTime&#39;: 739873.7083333334, &#39;RawValue&#39;: 1.2315446138381958},
+    {&#39;DateTime&#39;: 739873.75, &#39;RawValue&#39;: 1.2324408292770386},
+    {&#39;DateTime&#39;: 739873.7916666666, &#39;RawValue&#39;: 1.2323240041732788},
+    {&#39;DateTime&#39;: 739873.8333333334, &#39;RawValue&#39;: 1.2334930896759033},
+    {&#39;DateTime&#39;: 739873.875, &#39;RawValue&#39;: 1.2346036434173584},
+    {&#39;DateTime&#39;: 739873.9166666666, &#39;RawValue&#39;: 1.2358506917953491},
+    {&#39;DateTime&#39;: 739873.9583333334, &#39;RawValue&#39;: 1.237565279006958},
+    {&#39;DateTime&#39;: 739874.0, &#39;RawValue&#39;: 1.2394943237304688},
+    {&#39;DateTime&#39;: 739874.0416666666, &#39;RawValue&#39;: 1.240254282951355},
+    {&#39;DateTime&#39;: 739874.0833333334, &#39;RawValue&#39;: 1.241072654724121},
+    {&#39;DateTime&#39;: 739874.125, &#39;RawValue&#39;: 1.2426702976226807},
+    {&#39;DateTime&#39;: 739874.1666666666, &#39;RawValue&#39;: 1.2429041862487793},
+    {&#39;DateTime&#39;: 739874.2083333334, &#39;RawValue&#39;: 1.2437615394592285},
+    {&#39;DateTime&#39;: 739874.25, &#39;RawValue&#39;: 1.244540810585022},
+    {&#39;DateTime&#39;: 739874.2916666666, &#39;RawValue&#39;: 1.2445603609085083},
+    {&#39;DateTime&#39;: 739874.3333333334, &#39;RawValue&#39;: 1.2447161674499512},
+    {&#39;DateTime&#39;: 739874.375, &#39;RawValue&#39;: 1.2448720932006836},
+    {&#39;DateTime&#39;: 739874.4166666666, &#39;RawValue&#39;: 1.245359182357788},
+    {&#39;DateTime&#39;: 739874.4583333334, &#39;RawValue&#39;: 1.2447551488876343},
+    {&#39;DateTime&#39;: 739874.5, &#39;RawValue&#39;: 1.2432743310928345},
+    {&#39;DateTime&#39;: 739874.5416666666, &#39;RawValue&#39;: 1.2414038181304932},
+    {&#39;DateTime&#39;: 739874.5833333334, &#39;RawValue&#39;: 1.2376238107681274},
+    {&#39;DateTime&#39;: 739874.625, &#39;RawValue&#39;: 1.237078309059143},
+    {&#39;DateTime&#39;: 739874.6666666666, &#39;RawValue&#39;: 1.2349739074707031},
+    {&#39;DateTime&#39;: 739874.7083333334, &#39;RawValue&#39;: 1.2333372831344604},
+    {&#39;DateTime&#39;: 739874.75, &#39;RawValue&#39;: 1.2321486473083496},
+    {&#39;DateTime&#39;: 739874.7916666666, &#39;RawValue&#39;: 1.2314082384109497},
+    {&#39;DateTime&#39;: 739874.8333333334, &#39;RawValue&#39;: 1.2325772047042847},
+    {&#39;DateTime&#39;: 739874.875, &#39;RawValue&#39;: 1.2345646619796753},
+    {&#39;DateTime&#39;: 739874.9166666666, &#39;RawValue&#39;: 1.2361819744110107},
+    {&#39;DateTime&#39;: 739874.9583333334, &#39;RawValue&#39;: 1.2397280931472778},
+    {&#39;DateTime&#39;: 739875.0, &#39;RawValue&#39;: 1.2436835765838623},
+    {&#39;DateTime&#39;: 739875.0416666666, &#39;RawValue&#39;: 1.245417594909668},
+    {&#39;DateTime&#39;: 739875.0833333334, &#39;RawValue&#39;: 1.249450922012329},
+    {&#39;DateTime&#39;: 739875.125, &#39;RawValue&#39;: 1.251652717590332},
+    {&#39;DateTime&#39;: 739875.1666666666, &#39;RawValue&#39;: 1.2536401748657227},
+    {&#39;DateTime&#39;: 739875.2083333334, &#39;RawValue&#39;: 1.2552767992019653},
+    {&#39;DateTime&#39;: 739875.25, &#39;RawValue&#39;: 1.2560172080993652},
+    {&#39;DateTime&#39;: 739875.2916666666, &#39;RawValue&#39;: 1.2559587955474854},
+    {&#39;DateTime&#39;: 739875.3333333334, &#39;RawValue&#39;: 1.254867672920227},
+    {&#39;DateTime&#39;: 739875.375, &#39;RawValue&#39;: 1.2551989555358887},
+    {&#39;DateTime&#39;: 739875.4166666666, &#39;RawValue&#39;: 1.2528997659683228},
+    {&#39;DateTime&#39;: 739875.4583333334, &#39;RawValue&#39;: 1.2511460781097412},
+    {&#39;DateTime&#39;: 739875.5, &#39;RawValue&#39;: 1.24785315990448},
+    {&#39;DateTime&#39;: 739875.5416666666, &#39;RawValue&#39;: 1.2453787326812744},
+    {&#39;DateTime&#39;: 739875.5833333334, &#39;RawValue&#39;: 1.244735598564148},
+    {&#39;DateTime&#39;: 739875.625, &#39;RawValue&#39;: 1.244482398033142},
+    {&#39;DateTime&#39;: 739875.6666666666, &#39;RawValue&#39;: 1.2439757585525513},
+    {&#39;DateTime&#39;: 739875.7083333334, &#39;RawValue&#39;: 1.2440732717514038},
+    {&#39;DateTime&#39;: 739875.75, &#39;RawValue&#39;: 1.2438783645629883},
+    {&#39;DateTime&#39;: 739875.7916666666, &#39;RawValue&#39;: 1.243332862854004},
+    {&#39;DateTime&#39;: 739875.8333333334, &#39;RawValue&#39;: 1.243021011352539},
+    {&#39;DateTime&#39;: 739875.875, &#39;RawValue&#39;: 1.2446187734603882},
+    {&#39;DateTime&#39;: 739875.9166666666, &#39;RawValue&#39;: 1.2454371452331543},
+    {&#39;DateTime&#39;: 739875.9583333334, &#39;RawValue&#39;: 1.2474830150604248},
+    {&#39;DateTime&#39;: 739876.0, &#39;RawValue&#39;: 1.2486131191253662},
+    {&#39;DateTime&#39;: 739876.0416666666, &#39;RawValue&#39;: 1.2512046098709106},
+    {&#39;DateTime&#39;: 739876.0833333334, &#39;RawValue&#39;: 1.2532310485839844},
+    {&#39;DateTime&#39;: 739876.125, &#39;RawValue&#39;: 1.255510687828064},
+    {&#39;DateTime&#39;: 739876.1666666666, &#39;RawValue&#39;: 1.257264256477356},
+    {&#39;DateTime&#39;: 739876.2083333334, &#39;RawValue&#39;: 1.258589267730713},
+    {&#39;DateTime&#39;: 739876.25, &#39;RawValue&#39;: 1.25849187374115},
+    {&#39;DateTime&#39;: 739876.2916666666, &#39;RawValue&#39;: 1.2589010000228882},
+    {&#39;DateTime&#39;: 739876.3333333334, &#39;RawValue&#39;: 1.258530855178833},
+    {&#39;DateTime&#39;: 739876.375, &#39;RawValue&#39;: 1.2589205503463745},
+    {&#39;DateTime&#39;: 739876.4166666666, &#39;RawValue&#39;: 1.2598751783370972},
+    {&#39;DateTime&#39;: 739876.4583333334, &#39;RawValue&#39;: 1.2591933012008667},
+    {&#39;DateTime&#39;: 739876.5, &#39;RawValue&#39;: 1.259505033493042},
+    {&#39;DateTime&#39;: 739876.5416666666, &#39;RawValue&#39;: 1.2604013681411743},
+    {&#39;DateTime&#39;: 739876.5833333334, &#39;RawValue&#39;: 1.2615703344345093},
+    {&#39;DateTime&#39;: 739876.625, &#39;RawValue&#39;: 1.261979579925537},
+    {&#39;DateTime&#39;: 739876.6666666666, &#39;RawValue&#39;: 1.2642982006072998},
+    {&#39;DateTime&#39;: 739876.7083333334, &#39;RawValue&#39;: 1.2653894424438477},
+    {&#39;DateTime&#39;: 739876.75, &#39;RawValue&#39;: 1.265993356704712},
+    {&#39;DateTime&#39;: 739876.7916666666, &#39;RawValue&#39;: 1.267259955406189},
+    {&#39;DateTime&#39;: 739876.8333333334, &#39;RawValue&#39;: 1.2677274942398071},
+    {&#39;DateTime&#39;: 739876.875, &#39;RawValue&#39;: 1.2691693305969238},
+    {&#39;DateTime&#39;: 739876.9166666666, &#39;RawValue&#39;: 1.2699294090270996},
+    {&#39;DateTime&#39;: 739876.9583333334, &#39;RawValue&#39;: 1.270708680152893},
+    {&#39;DateTime&#39;: 739877.0, &#39;RawValue&#39;: 1.2725597620010376},
+    {&#39;DateTime&#39;: 739877.0416666666, &#39;RawValue&#39;: 1.2734169960021973},
+    {&#39;DateTime&#39;: 739877.0833333334, &#39;RawValue&#39;: 1.2740015983581543},
+    {&#39;DateTime&#39;: 739877.125, &#39;RawValue&#39;: 1.2746446132659912},
+    {&#39;DateTime&#39;: 739877.1666666666, &#39;RawValue&#39;: 1.2747809886932373},
+    {&#39;DateTime&#39;: 739877.2083333334, &#39;RawValue&#39;: 1.2756967544555664},
+    {&#39;DateTime&#39;: 739877.25, &#39;RawValue&#39;: 1.276320219039917},
+    {&#39;DateTime&#39;: 739877.2916666666, &#39;RawValue&#39;: 1.2764371633529663},
+    {&#39;DateTime&#39;: 739877.3333333334, &#39;RawValue&#39;: 1.2772165536880493},
+    {&#39;DateTime&#39;: 739877.375, &#39;RawValue&#39;: 1.2779959440231323},
+    {&#39;DateTime&#39;: 739877.4166666666, &#39;RawValue&#39;: 1.2791650295257568},
+    {&#39;DateTime&#39;: 739877.4583333334, &#39;RawValue&#39;: 1.280217170715332},
+    {&#39;DateTime&#39;: 739877.5, &#39;RawValue&#39;: 1.2807626724243164},
+    {&#39;DateTime&#39;: 739877.5416666666, &#39;RawValue&#39;: 1.2812693119049072},
+    {&#39;DateTime&#39;: 739877.5833333334, &#39;RawValue&#39;: 1.2820876836776733},
+    {&#39;DateTime&#39;: 739877.625, &#39;RawValue&#39;: 1.2823214530944824},
+    {&#39;DateTime&#39;: 739877.6666666666, &#39;RawValue&#39;: 1.282516360282898},
+    {&#39;DateTime&#39;: 739877.7083333334, &#39;RawValue&#39;: 1.2848155498504639},
+    {&#39;DateTime&#39;: 739877.75, &#39;RawValue&#39;: 1.286647081375122},
+    {&#39;DateTime&#39;: 739877.7916666666, &#39;RawValue&#39;: 1.287933111190796},
+    {&#39;DateTime&#39;: 739877.8333333334, &#39;RawValue&#39;: 1.2892191410064697},
+    {&#39;DateTime&#39;: 739877.875, &#39;RawValue&#39;: 1.2903101444244385},
+    {&#39;DateTime&#39;: 739877.9166666666, &#39;RawValue&#39;: 1.29280424118042},
+    {&#39;DateTime&#39;: 739877.9583333334, &#39;RawValue&#39;: 1.2938953638076782},
+    {&#39;DateTime&#39;: 739878.0, &#39;RawValue&#39;: 1.295337200164795},
+    {&#39;DateTime&#39;: 739878.0416666666, &#39;RawValue&#39;: 1.2967790365219116},
+    {&#39;DateTime&#39;: 739878.0833333334, &#39;RawValue&#39;: 1.2978312969207764},
+    {&#39;DateTime&#39;: 739878.125, &#39;RawValue&#39;: 1.2983769178390503},
+    {&#39;DateTime&#39;: 739878.1666666666, &#39;RawValue&#39;: 1.2983378171920776},
+    {&#39;DateTime&#39;: 739878.2083333334, &#39;RawValue&#39;: 1.2981040477752686},
+    {&#39;DateTime&#39;: 739878.25, &#39;RawValue&#39;: 1.2994290590286255},
+    {&#39;DateTime&#39;: 739878.2916666666, &#39;RawValue&#39;: 1.2997796535491943},
+    {&#39;DateTime&#39;: 739878.3333333334, &#39;RawValue&#39;: 1.3003642559051514},
+    {&#39;DateTime&#39;: 739878.375, &#39;RawValue&#39;: 1.300559163093567},
+    {&#39;DateTime&#39;: 739878.4166666666, &#39;RawValue&#39;: 1.2999745607376099},
+    {&#39;DateTime&#39;: 739878.4583333334, &#39;RawValue&#39;: 1.3000915050506592},
+    {&#39;DateTime&#39;: 739878.5, &#39;RawValue&#39;: 1.2999745607376099},
+    {&#39;DateTime&#39;: 739878.5416666666, &#39;RawValue&#39;: 1.2999355792999268},
+    {&#39;DateTime&#39;: 739878.5833333334, &#39;RawValue&#39;: 1.29985773563385},
+    {&#39;DateTime&#39;: 739878.625, &#39;RawValue&#39;: 1.2989614009857178},
+    {&#39;DateTime&#39;: 739878.6666666666, &#39;RawValue&#39;: 1.2991951704025269},
+    {&#39;DateTime&#39;: 739878.7083333334, &#39;RawValue&#39;: 1.2985717058181763},
+    {&#39;DateTime&#39;: 739878.75, &#39;RawValue&#39;: 1.2979482412338257},
+    {&#39;DateTime&#39;: 739878.7916666666, &#39;RawValue&#39;: 1.296895980834961},
+    {&#39;DateTime&#39;: 739878.8333333334, &#39;RawValue&#39;: 1.2961945533752441},
+    {&#39;DateTime&#39;: 739878.875, &#39;RawValue&#39;: 1.2970908880233765},
+    {&#39;DateTime&#39;: 739878.9166666666, &#39;RawValue&#39;: 1.2970517873764038},
+    {&#39;DateTime&#39;: 739878.9583333334, &#39;RawValue&#39;: 1.2974804639816284},
+    {&#39;DateTime&#39;: 739879.0, &#39;RawValue&#39;: 1.297714352607727},
+    {&#39;DateTime&#39;: 739879.0416666666, &#39;RawValue&#39;: 1.297675371170044},
+    {&#39;DateTime&#39;: 739879.0833333334, &#39;RawValue&#39;: 1.2977533340454102},
+    {&#39;DateTime&#39;: 739879.125, &#39;RawValue&#39;: 1.2979872226715088},
+    {&#39;DateTime&#39;: 739879.1666666666, &#39;RawValue&#39;: 1.2984157800674438},
+    {&#39;DateTime&#39;: 739879.2083333334, &#39;RawValue&#39;: 1.2988834381103516},
+    {&#39;DateTime&#39;: 739879.25, &#39;RawValue&#39;: 1.298454761505127},
+    {&#39;DateTime&#39;: 739879.2916666666, &#39;RawValue&#39;: 1.298805594444275},
+    {&#39;DateTime&#39;: 739879.3333333334, &#39;RawValue&#39;: 1.2982209920883179},
+    {&#39;DateTime&#39;: 739879.375, &#39;RawValue&#39;: 1.2981430292129517},
+    {&#39;DateTime&#39;: 739879.4166666666, &#39;RawValue&#39;: 1.2983378171920776},
+    {&#39;DateTime&#39;: 739879.4583333334, &#39;RawValue&#39;: 1.2981430292129517},
+    {&#39;DateTime&#39;: 739879.5, &#39;RawValue&#39;: 1.2962725162506104},
+    {&#39;DateTime&#39;: 739879.5416666666, &#39;RawValue&#39;: 1.293583631515503},
+    {&#39;DateTime&#39;: 739879.5833333334, &#39;RawValue&#39;: 1.2925314903259277},
+    {&#39;DateTime&#39;: 739879.625, &#39;RawValue&#39;: 1.2919470071792603},
+    {&#39;DateTime&#39;: 739879.6666666666, &#39;RawValue&#39;: 1.292024850845337},
+    {&#39;DateTime&#39;: 739879.7083333334, &#39;RawValue&#39;: 1.2910505533218384},
+    {&#39;DateTime&#39;: 739879.75, &#39;RawValue&#39;: 1.2915571928024292},
+    {&#39;DateTime&#39;: 739879.7916666666, &#39;RawValue&#39;: 1.2915961742401123},
+    {&#39;DateTime&#39;: 739879.8333333334, &#39;RawValue&#39;: 1.2917910814285278},
+    {&#39;DateTime&#39;: 739879.875, &#39;RawValue&#39;: 1.2925314903259277},
+    {&#39;DateTime&#39;: 739879.9166666666, &#39;RawValue&#39;: 1.2933497428894043},
+    {&#39;DateTime&#39;: 739879.9583333334, &#39;RawValue&#39;: 1.2942850589752197},
+    {&#39;DateTime&#39;: 739880.0, &#39;RawValue&#39;: 1.2968569993972778},
+    {&#39;DateTime&#39;: 739880.0416666666, &#39;RawValue&#39;: 1.2975585460662842},
+    {&#39;DateTime&#39;: 739880.0833333334, &#39;RawValue&#39;: 1.2991561889648438},
+    {&#39;DateTime&#39;: 739880.125, &#39;RawValue&#39;: 1.3006761074066162},
+    {&#39;DateTime&#39;: 739880.1666666666, &#39;RawValue&#39;: 1.3020789623260498},
+    {&#39;DateTime&#39;: 739880.2083333334, &#39;RawValue&#39;: 1.3019620180130005},
+    {&#39;DateTime&#39;: 739880.25, &#39;RawValue&#39;: 1.3027024269104004},
+    {&#39;DateTime&#39;: 739880.2916666666, &#39;RawValue&#39;: 1.3027024269104004},
+    {&#39;DateTime&#39;: 739880.3333333334, &#39;RawValue&#39;: 1.3018840551376343},
+    {&#39;DateTime&#39;: 739880.375, &#39;RawValue&#39;: 1.301572322845459},
+    {&#39;DateTime&#39;: 739880.4166666666, &#39;RawValue&#39;: 1.3018062114715576},
+    {&#39;DateTime&#39;: 739880.4583333334, &#39;RawValue&#39;: 1.3011826276779175},
+    {&#39;DateTime&#39;: 739880.5, &#39;RawValue&#39;: 1.2987664937973022},
+    {&#39;DateTime&#39;: 739880.5416666666, &#39;RawValue&#39;: 1.2971687316894531},
+    {&#39;DateTime&#39;: 739880.5833333334, &#39;RawValue&#39;: 1.2971687316894531},
+    {&#39;DateTime&#39;: 739880.625, &#39;RawValue&#39;: 1.2972077131271362},
+    {&#39;DateTime&#39;: 739880.6666666666, &#39;RawValue&#39;: 1.2979872226715088},
+    {&#39;DateTime&#39;: 739880.7083333334, &#39;RawValue&#39;: 1.300559163093567},
+    {&#39;DateTime&#39;: 739880.75, &#39;RawValue&#39;: 1.3017282485961914},
+    {&#39;DateTime&#39;: 739880.7916666666, &#39;RawValue&#39;: 1.3039884567260742},
+    {&#39;DateTime&#39;: 739880.8333333334, &#39;RawValue&#39;: 1.305625081062317},
+    {&#39;DateTime&#39;: 739880.875, &#39;RawValue&#39;: 1.3065603971481323},
+    {&#39;DateTime&#39;: 739880.9166666666, &#39;RawValue&#39;: 1.307183861732483},
+    {&#39;DateTime&#39;: 739880.9583333334, &#39;RawValue&#39;: 1.3081191778182983},
+    {&#39;DateTime&#39;: 739881.0, &#39;RawValue&#39;: 1.3092492818832397},
+    {&#39;DateTime&#39;: 739881.0416666666, &#39;RawValue&#39;: 1.3102624416351318},
+    {&#39;DateTime&#39;: 739881.0833333334, &#39;RawValue&#39;: 1.3115484714508057},
+    {&#39;DateTime&#39;: 739881.125, &#39;RawValue&#39;: 1.3123278617858887},
+    {&#39;DateTime&#39;: 739881.1666666666, &#39;RawValue&#39;: 1.3124058246612549},
+    {&#39;DateTime&#39;: 739881.2083333334, &#39;RawValue&#39;: 1.3124836683273315},
+    {&#39;DateTime&#39;: 739881.25, &#39;RawValue&#39;: 1.3120160102844238},
+    {&#39;DateTime&#39;: 739881.2916666666, &#39;RawValue&#39;: 1.3115094900131226},
+    {&#39;DateTime&#39;: 739881.3333333334, &#39;RawValue&#39;: 1.3104573488235474},
+    {&#39;DateTime&#39;: 739881.375, &#39;RawValue&#39;: 1.3101454973220825},
+    {&#39;DateTime&#39;: 739881.4166666666, &#39;RawValue&#39;: 1.308937430381775},
+    {&#39;DateTime&#39;: 739881.4583333334, &#39;RawValue&#39;: 1.306989073753357},
+    {&#39;DateTime&#39;: 739881.5, &#39;RawValue&#39;: 1.3057808876037598},
+    {&#39;DateTime&#39;: 739881.5416666666, &#39;RawValue&#39;: 1.3038325309753418},
+    {&#39;DateTime&#39;: 739881.5833333334, &#39;RawValue&#39;: 1.301026701927185},
+    {&#39;DateTime&#39;: 739881.625, &#39;RawValue&#39;: 1.2999355792999268},
+    {&#39;DateTime&#39;: 739881.6666666666, &#39;RawValue&#39;: 1.2983378171920776},
+    {&#39;DateTime&#39;: 739881.7083333334, &#39;RawValue&#39;: 1.2974026203155518},
+    {&#39;DateTime&#39;: 739881.75, &#39;RawValue&#39;: 1.2957268953323364},
+    {&#39;DateTime&#39;: 739881.7916666666, &#39;RawValue&#39;: 1.2952203750610352},
+    {&#39;DateTime&#39;: 739881.8333333334, &#39;RawValue&#39;: 1.2937005758285522},
+    {&#39;DateTime&#39;: 739881.875, &#39;RawValue&#39;: 1.2924535274505615},
+    {&#39;DateTime&#39;: 739881.9166666666, &#39;RawValue&#39;: 1.2923365831375122},
+    {&#39;DateTime&#39;: 739881.9583333334, &#39;RawValue&#39;: 1.292024850845337},
+    {&#39;DateTime&#39;: 739882.0, &#39;RawValue&#39;: 1.2929991483688354},
+    {&#39;DateTime&#39;: 739882.0416666666, &#39;RawValue&#39;: 1.2933497428894043},
+    {&#39;DateTime&#39;: 739882.0833333334, &#39;RawValue&#39;: 1.2934277057647705},
+    {&#39;DateTime&#39;: 739882.125, &#39;RawValue&#39;: 1.2948306798934937},
+    {&#39;DateTime&#39;: 739882.1666666666, &#39;RawValue&#39;: 1.2947137355804443},
+    {&#39;DateTime&#39;: 739882.2083333334, &#39;RawValue&#39;: 1.294402003288269},
+    {&#39;DateTime&#39;: 739882.25, &#39;RawValue&#39;: 1.2949085235595703},
+    {&#39;DateTime&#39;: 739882.2916666666, &#39;RawValue&#39;: 1.2954931259155273},
+    {&#39;DateTime&#39;: 739882.3333333334, &#39;RawValue&#39;: 1.2948696613311768},
+    {&#39;DateTime&#39;: 739882.375, &#39;RawValue&#39;: 1.2944798469543457},
+    {&#39;DateTime&#39;: 739882.4166666666, &#39;RawValue&#39;: 1.2949085235595703},
+    {&#39;DateTime&#39;: 739882.4583333334, &#39;RawValue&#39;: 1.2934666872024536},
+    {&#39;DateTime&#39;: 739882.5, &#39;RawValue&#39;: 1.2918689250946045},
+    {&#39;DateTime&#39;: 739882.5416666666, &#39;RawValue&#39;: 1.2898036241531372},
+    {&#39;DateTime&#39;: 739882.5833333334, &#39;RawValue&#39;: 1.2854779958724976},
+    {&#39;DateTime&#39;: 739882.625, &#39;RawValue&#39;: 1.2845816612243652},
+    {&#39;DateTime&#39;: 739882.6666666666, &#39;RawValue&#39;: 1.2826722860336304},
+    {&#39;DateTime&#39;: 739882.7083333334, &#39;RawValue&#39;: 1.2806848287582397},
+    {&#39;DateTime&#39;: 739882.75, &#39;RawValue&#39;: 1.2794767618179321},
+    {&#39;DateTime&#39;: 739882.7916666666, &#39;RawValue&#39;: 1.2784634828567505},
+    {&#39;DateTime&#39;: 739882.8333333334, &#39;RawValue&#39;: 1.277138590812683},
+    {&#39;DateTime&#39;: 739882.875, &#39;RawValue&#39;: 1.2778011560440063},
+    {&#39;DateTime&#39;: 739882.9166666666, &#39;RawValue&#39;: 1.2782686948776245},
+    {&#39;DateTime&#39;: 739882.9583333334, &#39;RawValue&#39;: 1.278619408607483},
+    {&#39;DateTime&#39;: 739883.0, &#39;RawValue&#39;: 1.279632568359375},
+    {&#39;DateTime&#39;: 739883.0416666666, &#39;RawValue&#39;: 1.2803730964660645},
+    {&#39;DateTime&#39;: 739883.0833333334, &#39;RawValue&#39;: 1.2812693119049072},
+    {&#39;DateTime&#39;: 739883.125, &#39;RawValue&#39;: 1.2818149328231812},
+    {&#39;DateTime&#39;: 739883.1666666666, &#39;RawValue&#39;: 1.2826333045959473},
+    {&#39;DateTime&#39;: 739883.2083333334, &#39;RawValue&#39;: 1.2832177877426147},
+    {&#39;DateTime&#39;: 739883.25, &#39;RawValue&#39;: 1.2840361595153809},
+    {&#39;DateTime&#39;: 739883.2916666666, &#39;RawValue&#39;: 1.2845038175582886},
+    {&#39;DateTime&#39;: 739883.3333333334, &#39;RawValue&#39;: 1.2846206426620483},
+    {&#39;DateTime&#39;: 739883.375, &#39;RawValue&#39;: 1.2855949401855469},
+    {&#39;DateTime&#39;: 739883.4166666666, &#39;RawValue&#39;: 1.286413311958313},
+    {&#39;DateTime&#39;: 739883.4583333334, &#39;RawValue&#39;: 1.285400152206421},
+    {&#39;DateTime&#39;: 739883.5, &#39;RawValue&#39;: 1.2834126949310303},
+    {&#39;DateTime&#39;: 739883.5416666666, &#39;RawValue&#39;: 1.2810745239257812},
+    {&#39;DateTime&#39;: 739883.5833333334, &#39;RawValue&#39;: 1.2802951335906982},
+    {&#39;DateTime&#39;: 739883.625, &#39;RawValue&#39;: 1.277878999710083},
+    {&#39;DateTime&#39;: 739883.6666666666, &#39;RawValue&#39;: 1.2755992412567139},
+    {&#39;DateTime&#39;: 739883.7083333334, &#39;RawValue&#39;: 1.2750341892242432},
+    {&#39;DateTime&#39;: 739883.75, &#39;RawValue&#39;: 1.274566650390625},
+    {&#39;DateTime&#39;: 739883.7916666666, &#39;RawValue&#39;: 1.2724817991256714},
+    {&#39;DateTime&#39;: 739883.8333333334, &#39;RawValue&#39;: 1.271546483039856},
+    {&#39;DateTime&#39;: 739883.875, &#39;RawValue&#39;: 1.2717608213424683},
+    {&#39;DateTime&#39;: 739883.9166666666, &#39;RawValue&#39;: 1.2720921039581299},
+    {&#39;DateTime&#39;: 739883.9583333334, &#39;RawValue&#39;: 1.2723064422607422},
+    {&#39;DateTime&#39;: 739884.0, &#39;RawValue&#39;: 1.273007869720459},
+    {&#39;DateTime&#39;: 739884.0416666666, &#39;RawValue&#39;: 1.272910475730896},
+    {&#39;DateTime&#39;: 739884.0833333334, &#39;RawValue&#39;: 1.2734754085540771},
+    {&#39;DateTime&#39;: 739884.125, &#39;RawValue&#39;: 1.2747420072555542},
+    {&#39;DateTime&#39;: 739884.1666666666, &#39;RawValue&#39;: 1.2749369144439697},
+    {&#39;DateTime&#39;: 739884.2083333334, &#39;RawValue&#39;: 1.2759500741958618},
+    {&#39;DateTime&#39;: 739884.25, &#39;RawValue&#39;: 1.2759695053100586},
+    {&#39;DateTime&#39;: 739884.2916666666, &#39;RawValue&#39;: 1.276807427406311},
+    {&#39;DateTime&#39;: 739884.3333333334, &#39;RawValue&#39;: 1.2777230739593506},
+    {&#39;DateTime&#39;: 739884.375, &#39;RawValue&#39;: 1.277645230293274},
+    {&#39;DateTime&#39;: 739884.4166666666, &#39;RawValue&#39;: 1.2793208360671997},
+    {&#39;DateTime&#39;: 739884.4583333334, &#39;RawValue&#39;: 1.2788532972335815},
+    {&#39;DateTime&#39;: 739884.5, &#39;RawValue&#39;: 1.2761644124984741},
+    {&#39;DateTime&#39;: 739884.5416666666, &#39;RawValue&#39;: 1.2729300260543823},
+    {&#39;DateTime&#39;: 739884.5833333334, &#39;RawValue&#39;: 1.2714685201644897},
+    {&#39;DateTime&#39;: 739884.625, &#39;RawValue&#39;: 1.270864486694336},
+    {&#39;DateTime&#39;: 739884.6666666666, &#39;RawValue&#39;: 1.2685070037841797},
+    {&#39;DateTime&#39;: 739884.7083333334, &#39;RawValue&#39;: 1.2662466764450073},
+    {&#39;DateTime&#39;: 739884.75, &#39;RawValue&#39;: 1.2656232118606567},
+    {&#39;DateTime&#39;: 739884.7916666666, &#39;RawValue&#39;: 1.2645710706710815},
+    {&#39;DateTime&#39;: 739884.8333333334, &#39;RawValue&#39;: 1.264083981513977},
+    {&#39;DateTime&#39;: 739884.875, &#39;RawValue&#39;: 1.2642593383789062},
+    {&#39;DateTime&#39;: 739884.9166666666, &#39;RawValue&#39;: 1.2644541263580322},
+    {&#39;DateTime&#39;: 739884.9583333334, &#39;RawValue&#39;: 1.265311360359192},
+    {&#39;DateTime&#39;: 739885.0, &#39;RawValue&#39;: 1.2663636207580566},
+    {&#39;DateTime&#39;: 739885.0416666666, &#39;RawValue&#39;: 1.266870141029358},
+    {&#39;DateTime&#39;: 739885.0833333334, &#39;RawValue&#39;: 1.268234133720398},
+    {&#39;DateTime&#39;: 739885.125, &#39;RawValue&#39;: 1.2692668437957764},
+    {&#39;DateTime&#39;: 739885.1666666666, &#39;RawValue&#39;: 1.2703189849853516},
+    {&#39;DateTime&#39;: 739885.2083333334, &#39;RawValue&#39;: 1.2711763381958008},
+    {&#39;DateTime&#39;: 739885.25, &#39;RawValue&#39;: 1.2715660333633423},
+    {&#39;DateTime&#39;: 739885.2916666666, &#39;RawValue&#39;: 1.2727935314178467},
+    {&#39;DateTime&#39;: 739885.3333333334, &#39;RawValue&#39;: 1.2725791931152344},
+    {&#39;DateTime&#39;: 739885.375, &#39;RawValue&#39;: 1.2739040851593018},
+    {&#39;DateTime&#39;: 739885.4166666666, &#39;RawValue&#39;: 1.274566650390625},
+    {&#39;DateTime&#39;: 739885.4583333334, &#39;RawValue&#39;: 1.2733975648880005},
+    {&#39;DateTime&#39;: 739885.5, &#39;RawValue&#39;: 1.2705917358398438},
+    {&#39;DateTime&#39;: 739885.5416666666, &#39;RawValue&#39;: 1.267454743385315},
+    {&#39;DateTime&#39;: 739885.5833333334, &#39;RawValue&#39;: 1.2646684646606445},
+    {&#39;DateTime&#39;: 739885.625, &#39;RawValue&#39;: 1.2630122900009155},
+    {&#39;DateTime&#39;: 739885.6666666666, &#39;RawValue&#39;: 1.2609468698501587},
+    {&#39;DateTime&#39;: 739885.7083333334, &#39;RawValue&#39;: 1.2597193717956543},
+    {&#39;DateTime&#39;: 739885.75, &#39;RawValue&#39;: 1.2579072713851929},
+    {&#39;DateTime&#39;: 739885.7916666666, &#39;RawValue&#39;: 1.2580046653747559},
+    {&#39;DateTime&#39;: 739885.8333333334, &#39;RawValue&#39;: 1.2581216096878052},
+    {&#39;DateTime&#39;: 739885.875, &#39;RawValue&#39;: 1.2586477994918823},
+    {&#39;DateTime&#39;: 739885.9166666666, &#39;RawValue&#39;: 1.2593492269515991},
+    {&#39;DateTime&#39;: 739885.9583333334, &#39;RawValue&#39;: 1.2603232860565186},
+    {&#39;DateTime&#39;: 739886.0, &#39;RawValue&#39;: 1.261063814163208},
+    {&#39;DateTime&#39;: 739886.0416666666, &#39;RawValue&#39;: 1.2619990110397339},
+    {&#39;DateTime&#39;: 739886.0833333334, &#39;RawValue&#39;: 1.2623498439788818},
+    {&#39;DateTime&#39;: 739886.125, &#39;RawValue&#39;: 1.2629148960113525},
+    {&#39;DateTime&#39;: 739886.1666666666, &#39;RawValue&#39;: 1.2642593383789062},
+    {&#39;DateTime&#39;: 739886.2083333334, &#39;RawValue&#39;: 1.2649996280670166},
+    {&#39;DateTime&#39;: 739886.25, &#39;RawValue&#39;: 1.2656232118606567},
+    {&#39;DateTime&#39;: 739886.2916666666, &#39;RawValue&#39;: 1.2653504610061646},
+    {&#39;DateTime&#39;: 739886.3333333334, &#39;RawValue&#39;: 1.2656621932983398},
+    {&#39;DateTime&#39;: 739886.375, &#39;RawValue&#39;: 1.2664610147476196},
+    {&#39;DateTime&#39;: 739886.4166666666, &#39;RawValue&#39;: 1.2660518884658813},
+    {&#39;DateTime&#39;: 739886.4583333334, &#39;RawValue&#39;: 1.2652724981307983},
+    {&#39;DateTime&#39;: 739886.5, &#39;RawValue&#39;: 1.2640644311904907},
+    {&#39;DateTime&#39;: 739886.5416666666, &#39;RawValue&#39;: 1.2621939182281494},
+    {&#39;DateTime&#39;: 739886.5833333334, &#39;RawValue&#39;: 1.2614924907684326},
+    {&#39;DateTime&#39;: 739886.625, &#39;RawValue&#39;: 1.258823037147522},
+    {&#39;DateTime&#39;: 739886.6666666666, &#39;RawValue&#39;: 1.2579658031463623},
+    {&#39;DateTime&#39;: 739886.7083333334, &#39;RawValue&#39;: 1.25706946849823},
+    {&#39;DateTime&#39;: 739886.75, &#39;RawValue&#39;: 1.256290078163147},
+    {&#39;DateTime&#39;: 739886.7916666666, &#39;RawValue&#39;: 1.2572838068008423},
+    {&#39;DateTime&#39;: 739886.8333333334, &#39;RawValue&#39;: 1.2585697174072266},
+    {&#39;DateTime&#39;: 739886.875, &#39;RawValue&#39;: 1.259738802909851},
+    {&#39;DateTime&#39;: 739886.9166666666, &#39;RawValue&#39;: 1.2612197399139404},
+    {&#39;DateTime&#39;: 739886.9583333334, &#39;RawValue&#39;: 1.2634214162826538},
+    {&#39;DateTime&#39;: 739887.0, &#39;RawValue&#39;: 1.2648438215255737},
+    {&#39;DateTime&#39;: 739887.0416666666, &#39;RawValue&#39;: 1.2662662267684937},
+    {&#39;DateTime&#39;: 739887.0833333334, &#39;RawValue&#39;: 1.2671624422073364},
+    {&#39;DateTime&#39;: 739887.125, &#39;RawValue&#39;: 1.2684094905853271},
+    {&#39;DateTime&#39;: 739887.1666666666, &#39;RawValue&#39;: 1.269500732421875},
+    {&#39;DateTime&#39;: 739887.2083333334, &#39;RawValue&#39;: 1.2698513269424438},
+    {&#39;DateTime&#39;: 739887.25, &#39;RawValue&#39;: 1.270572304725647},
+    {&#39;DateTime&#39;: 739887.2916666666, &#39;RawValue&#39;: 1.2710593938827515},
+    {&#39;DateTime&#39;: 739887.3333333334, &#39;RawValue&#39;: 1.2713712453842163},
+    {&#39;DateTime&#39;: 739887.375, &#39;RawValue&#39;: 1.2716634273529053},
+    {&#39;DateTime&#39;: 739887.4166666666, &#39;RawValue&#39;: 1.2723844051361084},
+    {&#39;DateTime&#39;: 739887.4583333334, &#39;RawValue&#39;: 1.272871494293213},
+    {&#39;DateTime&#39;: 739887.5, &#39;RawValue&#39;: 1.2719167470932007},
+    {&#39;DateTime&#39;: 739887.5416666666, &#39;RawValue&#39;: 1.269637107849121},
+    {&#39;DateTime&#39;: 739887.5833333334, &#39;RawValue&#39;: 1.269637107849121},
+    {&#39;DateTime&#39;: 739887.625, &#39;RawValue&#39;: 1.268234133720398},
+    {&#39;DateTime&#39;: 739887.6666666666, &#39;RawValue&#39;: 1.2674157619476318},
+    {&#39;DateTime&#39;: 739887.7083333334, &#39;RawValue&#39;: 1.2653309106826782},
+    {&#39;DateTime&#39;: 739887.75, &#39;RawValue&#39;: 1.2663246393203735},
+    {&#39;DateTime&#39;: 739887.7916666666, &#39;RawValue&#39;: 1.2664999961853027},
+    {&#39;DateTime&#39;: 739887.8333333334, &#39;RawValue&#39;: 1.267045497894287},
+    {&#39;DateTime&#39;: 739887.875, &#39;RawValue&#39;: 1.2666168212890625},
+    {&#39;DateTime&#39;: 739887.9166666666, &#39;RawValue&#39;: 1.266870141029358},
+    {&#39;DateTime&#39;: 739887.9583333334, &#39;RawValue&#39;: 1.2677664756774902},
+    {&#39;DateTime&#39;: 739888.0, &#39;RawValue&#39;: 1.2680003643035889},
+    {&#39;DateTime&#39;: 739888.0416666666, &#39;RawValue&#39;: 1.2688771486282349},
+    {&#39;DateTime&#39;: 739888.0833333334, &#39;RawValue&#39;: 1.2693058252334595},
+    {&#39;DateTime&#39;: 739888.125, &#39;RawValue&#39;: 1.2689356803894043},
+    {&#39;DateTime&#39;: 739888.1666666666, &#39;RawValue&#39;: 1.269637107849121},
+    {&#39;DateTime&#39;: 739888.2083333334, &#39;RawValue&#39;: 1.2695591449737549},
+    {&#39;DateTime&#39;: 739888.25, &#39;RawValue&#39;: 1.2696174383163452},
+    {&#39;DateTime&#39;: 739888.2916666666, &#39;RawValue&#39;: 1.2698708772659302},
+    {&#39;DateTime&#39;: 739888.3333333334, &#39;RawValue&#39;: 1.2703969478607178},
+    {&#39;DateTime&#39;: 739888.375, &#39;RawValue&#39;: 1.2703969478607178},
+    {&#39;DateTime&#39;: 739888.4166666666, &#39;RawValue&#39;: 1.2714296579360962},
+    {&#39;DateTime&#39;: 739888.4583333334, &#39;RawValue&#39;: 1.2722090482711792},
+    {&#39;DateTime&#39;: 739888.5, &#39;RawValue&#39;: 1.2715076208114624},
+    {&#39;DateTime&#39;: 739888.5416666666, &#39;RawValue&#39;: 1.2662856578826904},
+    {&#39;DateTime&#39;: 739888.5833333334, &#39;RawValue&#39;: 1.2648632526397705},
+    {&#39;DateTime&#39;: 739888.625, &#39;RawValue&#39;: 1.2652335166931152},
+    {&#39;DateTime&#39;: 739888.6666666666, &#39;RawValue&#39;: 1.2625640630722046},
+    {&#39;DateTime&#39;: 739888.7083333334, &#39;RawValue&#39;: 1.2590373754501343},
+    {&#39;DateTime&#39;: 739888.75, &#39;RawValue&#39;: 1.257712483406067},
+    {&#39;DateTime&#39;: 739888.7916666666, &#39;RawValue&#39;: 1.2576929330825806},
+    {&#39;DateTime&#39;: 739888.8333333334, &#39;RawValue&#39;: 1.257848858833313},
+    {&#39;DateTime&#39;: 739888.875, &#39;RawValue&#39;: 1.258667230606079},
+    {&#39;DateTime&#39;: 739888.9166666666, &#39;RawValue&#39;: 1.2590373754501343},
+    {&#39;DateTime&#39;: 739888.9583333334, &#39;RawValue&#39;: 1.259699821472168},
+    {&#39;DateTime&#39;: 739889.0, &#39;RawValue&#39;: 1.2609858512878418},
+    {&#39;DateTime&#39;: 739889.0416666666, &#39;RawValue&#39;: 1.2622718811035156},
+    {&#39;DateTime&#39;: 739889.0833333334, &#39;RawValue&#39;: 1.2626421451568604},
+    {&#39;DateTime&#39;: 739889.125, &#39;RawValue&#39;: 1.2636357545852661},
+    {&#39;DateTime&#39;: 739889.1666666666, &#39;RawValue&#39;: 1.2646490335464478},
+    {&#39;DateTime&#39;: 739889.2083333334, &#39;RawValue&#39;: 1.2655258178710938},
+    {&#39;DateTime&#39;: 739889.25, &#39;RawValue&#39;: 1.2664220333099365},
+    {&#39;DateTime&#39;: 739889.2916666666, &#39;RawValue&#39;: 1.2659155130386353},
+    {&#39;DateTime&#39;: 739889.3333333334, &#39;RawValue&#39;: 1.2657595872879028},
+    {&#39;DateTime&#39;: 739889.375, &#39;RawValue&#39;: 1.2667533159255981},
+    {&#39;DateTime&#39;: 739889.4166666666, &#39;RawValue&#39;: 1.2671818733215332},
+    {&#39;DateTime&#39;: 739889.4583333334, &#39;RawValue&#39;: 1.2684484720230103},
+    {&#39;DateTime&#39;: 739889.5, &#39;RawValue&#39;: 1.2686238288879395},
+    {&#39;DateTime&#39;: 739889.5416666666, &#39;RawValue&#39;: 1.2646878957748413},
+    {&#39;DateTime&#39;: 739889.5833333334, &#39;RawValue&#39;: 1.2624666690826416},
+    {&#39;DateTime&#39;: 739889.625, &#39;RawValue&#39;: 1.2578877210617065},
+    {&#39;DateTime&#39;: 739889.6666666666, &#39;RawValue&#39;: 1.2572253942489624},
+    {&#39;DateTime&#39;: 739889.7083333334, &#39;RawValue&#39;: 1.2540297508239746},
+    {&#39;DateTime&#39;: 739889.75, &#39;RawValue&#39;: 1.2527438402175903},
+    {&#39;DateTime&#39;: 739889.7916666666, &#39;RawValue&#39;: 1.2530556917190552},
+    {&#39;DateTime&#39;: 739889.8333333334, &#39;RawValue&#39;: 1.2543416023254395},
+    {&#39;DateTime&#39;: 739889.875, &#39;RawValue&#39;: 1.2543611526489258},
+    {&#39;DateTime&#39;: 739889.9166666666, &#39;RawValue&#39;: 1.2554717063903809},
+    {&#39;DateTime&#39;: 739889.9583333334, &#39;RawValue&#39;: 1.2558808326721191},
+    {&#39;DateTime&#39;: 739890.0, &#39;RawValue&#39;: 1.2575565576553345},
+    {&#39;DateTime&#39;: 739890.0416666666, &#39;RawValue&#39;: 1.25849187374115},
+    {&#39;DateTime&#39;: 739890.0833333334, &#39;RawValue&#39;: 1.2588814496994019},
+    {&#39;DateTime&#39;: 739890.125, &#39;RawValue&#39;: 1.259738802909851},
+    {&#39;DateTime&#39;: 739890.1666666666, &#39;RawValue&#39;: 1.260381817817688},
+    {&#39;DateTime&#39;: 739890.2083333334, &#39;RawValue&#39;: 1.2605961561203003},
+    {&#39;DateTime&#39;: 739890.25, &#39;RawValue&#39;: 1.2607910633087158},
+    {&#39;DateTime&#39;: 739890.2916666666, &#39;RawValue&#39;: 1.2606741189956665},
+    {&#39;DateTime&#39;: 739890.3333333334, &#39;RawValue&#39;: 1.2603232860565186},
+    {&#39;DateTime&#39;: 739890.375, &#39;RawValue&#39;: 1.2604013681411743},
+    {&#39;DateTime&#39;: 739890.4166666666, &#39;RawValue&#39;: 1.2613365650177002},
+    {&#39;DateTime&#39;: 739890.4583333334, &#39;RawValue&#39;: 1.2612197399139404},
+    {&#39;DateTime&#39;: 739890.5, &#39;RawValue&#39;: 1.261648416519165},
+    {&#39;DateTime&#39;: 739890.5416666666, &#39;RawValue&#39;: 1.261901617050171},
+    {&#39;DateTime&#39;: 739890.5833333334, &#39;RawValue&#39;: 1.2595245838165283},
+    {&#39;DateTime&#39;: 739890.625, &#39;RawValue&#39;: 1.2606546878814697},
+    {&#39;DateTime&#39;: 739890.6666666666, &#39;RawValue&#39;: 1.2586866617202759},
+    {&#39;DateTime&#39;: 739890.7083333334, &#39;RawValue&#39;: 1.2567187547683716},
+    {&#39;DateTime&#39;: 739890.75, &#39;RawValue&#39;: 1.2544195652008057},
+    {&#39;DateTime&#39;: 739890.7916666666, &#39;RawValue&#39;: 1.2529581785202026},
+    {&#39;DateTime&#39;: 739890.8333333334, &#39;RawValue&#39;: 1.252295732498169},
+    {&#39;DateTime&#39;: 739890.875, &#39;RawValue&#39;: 1.2525684833526611},
+    {&#39;DateTime&#39;: 739890.9166666666, &#39;RawValue&#39;: 1.2528023719787598},
+    {&#39;DateTime&#39;: 739890.9583333334, &#39;RawValue&#39;: 1.2536401748657227},
+    {&#39;DateTime&#39;: 739891.0, &#39;RawValue&#39;: 1.2544975280761719},
+    {&#39;DateTime&#39;: 739891.0416666666, &#39;RawValue&#39;: 1.2546923160552979},
+    {&#39;DateTime&#39;: 739891.0833333334, &#39;RawValue&#39;: 1.2550040483474731},
+    {&#39;DateTime&#39;: 739891.125, &#39;RawValue&#39;: 1.2548871040344238},
+    {&#39;DateTime&#39;: 739891.1666666666, &#39;RawValue&#39;: 1.2557835578918457},
+    {&#39;DateTime&#39;: 739891.2083333334, &#39;RawValue&#39;: 1.2554912567138672},
+    {&#39;DateTime&#39;: 739891.25, &#39;RawValue&#39;: 1.2555302381515503},
+    {&#39;DateTime&#39;: 739891.2916666666, &#39;RawValue&#39;: 1.2549066543579102},
+    {&#39;DateTime&#39;: 739891.3333333334, &#39;RawValue&#39;: 1.2541078329086304},
+    {&#39;DateTime&#39;: 739891.375, &#39;RawValue&#39;: 1.255510687828064},
+    {&#39;DateTime&#39;: 739891.4166666666, &#39;RawValue&#39;: 1.2554521560668945},
+    {&#39;DateTime&#39;: 739891.4583333334, &#39;RawValue&#39;: 1.2548092603683472},
+    {&#39;DateTime&#39;: 739891.5, &#39;RawValue&#39;: 1.250970721244812},
+    {&#39;DateTime&#39;: 739891.5416666666, &#39;RawValue&#39;: 1.2461775541305542},
+    {&#39;DateTime&#39;: 739891.5833333334, &#39;RawValue&#39;: 1.242495059967041},
+    {&#39;DateTime&#39;: 739891.625, &#39;RawValue&#39;: 1.2400399446487427},
+    {&#39;DateTime&#39;: 739891.6666666666, &#39;RawValue&#39;: 1.2361429929733276},
+    {&#39;DateTime&#39;: 739891.7083333334, &#39;RawValue&#39;: 1.233921766281128},
+    {&#39;DateTime&#39;: 739891.75, &#39;RawValue&#39;: 1.2346036434173584},
+    {&#39;DateTime&#39;: 739891.7916666666, &#39;RawValue&#39;: 1.2331033945083618},
+    {&#39;DateTime&#39;: 739891.8333333334, &#39;RawValue&#39;: 1.2329280376434326},
+    {&#39;DateTime&#39;: 739891.875, &#39;RawValue&#39;: 1.2328695058822632},
+    {&#39;DateTime&#39;: 739891.9166666666, &#39;RawValue&#39;: 1.2340775728225708},
+    {&#39;DateTime&#39;: 739891.9583333334, &#39;RawValue&#39;: 1.2362987995147705},
+    {&#39;DateTime&#39;: 739892.0, &#39;RawValue&#39;: 1.237916111946106},
+    {&#39;DateTime&#39;: 739892.0416666666, &#39;RawValue&#39;: 1.2393189668655396},
+    {&#39;DateTime&#39;: 739892.0833333334, &#39;RawValue&#39;: 1.241131067276001},
+    {&#39;DateTime&#39;: 739892.125, &#39;RawValue&#39;: 1.24278724193573},
+    {&#39;DateTime&#39;: 739892.1666666666, &#39;RawValue&#39;: 1.244385004043579},
+    {&#39;DateTime&#39;: 739892.2083333334, &#39;RawValue&#39;: 1.246099591255188},
+    {&#39;DateTime&#39;: 739892.25, &#39;RawValue&#39;: 1.2470347881317139},
+    {&#39;DateTime&#39;: 739892.2916666666, &#39;RawValue&#39;: 1.2479896545410156},
+    {&#39;DateTime&#39;: 739892.3333333334, &#39;RawValue&#39;: 1.2487300634384155},
+    {&#39;DateTime&#39;: 739892.375, &#39;RawValue&#39;: 1.2496652603149414},
+    {&#39;DateTime&#39;: 739892.4166666666, &#39;RawValue&#39;: 1.2507174015045166},
+    {&#39;DateTime&#39;: 739892.4583333334, &#39;RawValue&#39;: 1.2503862380981445},
+    {&#39;DateTime&#39;: 739892.5, &#39;RawValue&#39;: 1.2492367029190063},
+    {&#39;DateTime&#39;: 739892.5416666666, &#39;RawValue&#39;: 1.2460801601409912},
+    {&#39;DateTime&#39;: 739892.5833333334, &#39;RawValue&#39;: 1.2437419891357422},
+    {&#39;DateTime&#39;: 739892.625, &#39;RawValue&#39;: 1.2426118850708008},
+    {&#39;DateTime&#39;: 739892.6666666666, &#39;RawValue&#39;: 1.2373510599136353},
+    {&#39;DateTime&#39;: 739892.7083333334, &#39;RawValue&#39;: 1.2326163053512573},
+    {&#39;DateTime&#39;: 739892.75, &#39;RawValue&#39;: 1.2313302755355835},
+    {&#39;DateTime&#39;: 739892.7916666666, &#39;RawValue&#39;: 1.2309989929199219},
+    {&#39;DateTime&#39;: 739892.8333333334, &#39;RawValue&#39;: 1.2312328815460205},
+    {&#39;DateTime&#39;: 739892.875, &#39;RawValue&#39;: 1.2312523126602173},
+    {&#39;DateTime&#39;: 739892.9166666666, &#39;RawValue&#39;: 1.2322850227355957},
+    {&#39;DateTime&#39;: 739892.9583333334, &#39;RawValue&#39;: 1.2338632345199585},
+    {&#39;DateTime&#39;: 739893.0, &#39;RawValue&#39;: 1.2340387105941772},
+    {&#39;DateTime&#39;: 739893.0416666666, &#39;RawValue&#39;: 1.234642744064331},
+    {&#39;DateTime&#39;: 739893.0833333334, &#39;RawValue&#39;: 1.2352662086486816},
+    {&#39;DateTime&#39;: 739893.125, &#39;RawValue&#39;: 1.2359092235565186},
+    {&#39;DateTime&#39;: 739893.1666666666, &#39;RawValue&#39;: 1.2382278442382812},
+    {&#39;DateTime&#39;: 739893.2083333334, &#39;RawValue&#39;: 1.2406439781188965},
+    {&#39;DateTime&#39;: 739893.25, &#39;RawValue&#39;: 1.242495059967041},
+    {&#39;DateTime&#39;: 739893.2916666666, &#39;RawValue&#39;: 1.243605613708496},
+    {&#39;DateTime&#39;: 739893.3333333334, &#39;RawValue&#39;: 1.2432743310928345},
+    {&#39;DateTime&#39;: 739893.375, &#39;RawValue&#39;: 1.2447941303253174},
+    {&#39;DateTime&#39;: 739893.4166666666, &#39;RawValue&#39;: 1.2458852529525757},
+    {&#39;DateTime&#39;: 739893.4583333334, &#39;RawValue&#39;: 1.2461775541305542},
+    {&#39;DateTime&#39;: 739893.5, &#39;RawValue&#39;: 1.2467621564865112},
+    {&#39;DateTime&#39;: 739893.5416666666, &#39;RawValue&#39;: 1.2446967363357544},
+    {&#39;DateTime&#39;: 739893.5833333334, &#39;RawValue&#39;: 1.241267442703247},
+    {&#39;DateTime&#39;: 739893.625, &#39;RawValue&#39;: 1.2402931451797485},
+    {&#39;DateTime&#39;: 739893.6666666666, &#39;RawValue&#39;: 1.239572286605835},
+    {&#39;DateTime&#39;: 739893.7083333334, &#39;RawValue&#39;: 1.2382862567901611},
+    {&#39;DateTime&#39;: 739893.75, &#39;RawValue&#39;: 1.2380329370498657},
+    {&#39;DateTime&#39;: 739893.7916666666, &#39;RawValue&#39;: 1.2404295206069946},
+    {&#39;DateTime&#39;: 739893.8333333334, &#39;RawValue&#39;: 1.2433522939682007},
+    {&#39;DateTime&#39;: 739893.875, &#39;RawValue&#39;: 1.2449500560760498},
+    {&#39;DateTime&#39;: 739893.9166666666, &#39;RawValue&#39;: 1.2511266469955444},
+    {&#39;DateTime&#39;: 739893.9583333334, &#39;RawValue&#39;: 1.2551989555358887},
+    {&#39;DateTime&#39;: 739894.0, &#39;RawValue&#39;: 1.2614729404449463},
+    {&#39;DateTime&#39;: 739894.0416666666, &#39;RawValue&#39;: 1.2680197954177856},
+    {&#39;DateTime&#39;: 739894.0833333334, &#39;RawValue&#39;: 1.271449089050293},
+    {&#39;DateTime&#39;: 739894.125, &#39;RawValue&#39;: 1.278424620628357},
+    {&#39;DateTime&#39;: 739894.1666666666, &#39;RawValue&#39;: 1.2853220701217651},
+    {&#39;DateTime&#39;: 739894.2083333334, &#39;RawValue&#39;: 1.2915183305740356},
+    {&#39;DateTime&#39;: 739894.25, &#39;RawValue&#39;: 1.2995458841323853},
+    {&#39;DateTime&#39;: 739894.2916666666, &#39;RawValue&#39;: 1.306638240814209},
+    {&#39;DateTime&#39;: 739894.3333333334, &#39;RawValue&#39;: 1.3134968280792236},
+    {&#39;DateTime&#39;: 739894.375, &#39;RawValue&#39;: 1.319498062133789},
+    {&#39;DateTime&#39;: 739894.4166666666, &#39;RawValue&#39;: 1.3238238096237183},
+    {&#39;DateTime&#39;: 739894.4583333334, &#39;RawValue&#39;: 1.3282662630081177},
+    {&#39;DateTime&#39;: 739894.5, &#39;RawValue&#39;: 1.3323969841003418},
+    {&#39;DateTime&#39;: 739894.5416666666, &#39;RawValue&#39;: 1.334033727645874},
+    {&#39;DateTime&#39;: 739894.5833333334, &#39;RawValue&#39;: 1.3376967906951904},
+    {&#39;DateTime&#39;: 739894.625, &#39;RawValue&#39;: 1.339684247970581},
+    {&#39;DateTime&#39;: 739894.6666666666, &#39;RawValue&#39;: 1.3403466939926147},
+    {&#39;DateTime&#39;: 739894.7083333334, &#39;RawValue&#39;: 1.3438539505004883},
+    {&#39;DateTime&#39;: 739894.75, &#39;RawValue&#39;: 1.3477509021759033},
+    {&#39;DateTime&#39;: 739894.7916666666, &#39;RawValue&#39;: 1.3514139652252197},
+    {&#39;DateTime&#39;: 739894.8333333334, &#39;RawValue&#39;: 1.3535573482513428},
+    {&#39;DateTime&#39;: 739894.875, &#39;RawValue&#39;: 1.3564800024032593},
+    {&#39;DateTime&#39;: 739894.9166666666, &#39;RawValue&#39;: 1.3587790727615356},
+    {&#39;DateTime&#39;: 739894.9583333334, &#39;RawValue&#39;: 1.3605327606201172},
+    {&#39;DateTime&#39;: 739895.0, &#39;RawValue&#39;: 1.3629487752914429},
+    {&#39;DateTime&#39;: 739895.0416666666, &#39;RawValue&#39;: 1.3647024631500244},
+    {&#39;DateTime&#39;: 739895.0833333334, &#39;RawValue&#39;: 1.3652091026306152},
+    {&#39;DateTime&#39;: 739895.125, &#39;RawValue&#39;: 1.3673913478851318},
+    {&#39;DateTime&#39;: 739895.1666666666, &#39;RawValue&#39;: 1.3675471544265747},
+    {&#39;DateTime&#39;: 739895.2083333334, &#39;RawValue&#39;: 1.369768500328064},
+    {&#39;DateTime&#39;: 739895.25, &#39;RawValue&#39;: 1.3711713552474976},
+    {&#39;DateTime&#39;: 739895.2916666666, &#39;RawValue&#39;: 1.372301459312439},
+    {&#39;DateTime&#39;: 739895.3333333334, &#39;RawValue&#39;: 1.3729639053344727},
+    {&#39;DateTime&#39;: 739895.375, &#39;RawValue&#39;: 1.3744057416915894},
+    {&#39;DateTime&#39;: 739895.4166666666, &#39;RawValue&#39;: 1.3747565746307373},
+    {&#39;DateTime&#39;: 739895.4583333334, &#39;RawValue&#39;: 1.3757697343826294},
+    {&#39;DateTime&#39;: 739895.5, &#39;RawValue&#39;: 1.3765101432800293},
+    {&#39;DateTime&#39;: 739895.5416666666, &#39;RawValue&#39;: 1.3778741359710693},
+    {&#39;DateTime&#39;: 739895.5833333334, &#39;RawValue&#39;: 1.3788872957229614},
+    {&#39;DateTime&#39;: 739895.625, &#39;RawValue&#39;: 1.379315972328186},
+    {&#39;DateTime&#39;: 739895.6666666666, &#39;RawValue&#39;: 1.3791210651397705},
+    {&#39;DateTime&#39;: 739895.7083333334, &#39;RawValue&#39;: 1.3778350353240967},
+    {&#39;DateTime&#39;: 739895.75, &#39;RawValue&#39;: 1.3763153553009033},
+    {&#39;DateTime&#39;: 739895.7916666666, &#39;RawValue&#39;: 1.3744057416915894},
+    {&#39;DateTime&#39;: 739895.8333333334, &#39;RawValue&#39;: 1.3733536005020142},
+    {&#39;DateTime&#39;: 739895.875, &#39;RawValue&#39;: 1.3722624778747559},
+    {&#39;DateTime&#39;: 739895.9166666666, &#39;RawValue&#39;: 1.3726521730422974},
+    {&#39;DateTime&#39;: 739895.9583333334, &#39;RawValue&#39;: 1.3718727827072144},
+    {&#39;DateTime&#39;: 739896.0, &#39;RawValue&#39;: 1.370976448059082},
+    {&#39;DateTime&#39;: 739896.0416666666, &#39;RawValue&#39;: 1.370002269744873},
+    {&#39;DateTime&#39;: 739896.0833333334, &#39;RawValue&#39;: 1.3696125745773315},
+    {&#39;DateTime&#39;: 739896.125, &#39;RawValue&#39;: 1.3687163591384888},
+    {&#39;DateTime&#39;: 739896.1666666666, &#39;RawValue&#39;: 1.3683266639709473},
+    {&#39;DateTime&#39;: 739896.2083333334, &#39;RawValue&#39;: 1.3685214519500732},
+    {&#39;DateTime&#39;: 739896.25, &#39;RawValue&#39;: 1.3675081729888916},
+    {&#39;DateTime&#39;: 739896.2916666666, &#39;RawValue&#39;: 1.3669626712799072},
+    {&#39;DateTime&#39;: 739896.3333333334, &#39;RawValue&#39;: 1.3659495115280151},
+    {&#39;DateTime&#39;: 739896.375, &#39;RawValue&#39;: 1.3652870655059814},
+    {&#39;DateTime&#39;: 739896.4166666666, &#39;RawValue&#39;: 1.36489737033844},
+    {&#39;DateTime&#39;: 739896.4583333334, &#39;RawValue&#39;: 1.3647024631500244},
+    {&#39;DateTime&#39;: 739896.5, &#39;RawValue&#39;: 1.3635333776474},
+    {&#39;DateTime&#39;: 739896.5416666666, &#39;RawValue&#39;: 1.3635333776474},
+    {&#39;DateTime&#39;: 739896.5833333334, &#39;RawValue&#39;: 1.362831950187683},
+    {&#39;DateTime&#39;: 739896.625, &#39;RawValue&#39;: 1.3624812364578247},
+    {&#39;DateTime&#39;: 739896.6666666666, &#39;RawValue&#39;: 1.3619745969772339},
+    {&#39;DateTime&#39;: 739896.7083333334, &#39;RawValue&#39;: 1.3608834743499756},
+    {&#39;DateTime&#39;: 739896.75, &#39;RawValue&#39;: 1.3609224557876587},
+    {&#39;DateTime&#39;: 739896.7916666666, &#39;RawValue&#39;: 1.3616628646850586},
+    {&#39;DateTime&#39;: 739896.8333333334, &#39;RawValue&#39;: 1.3619745969772339},
+    {&#39;DateTime&#39;: 739896.875, &#39;RawValue&#39;: 1.3628709316253662},
+    {&#39;DateTime&#39;: 739896.9166666666, &#39;RawValue&#39;: 1.3636113405227661},
+    {&#39;DateTime&#39;: 739896.9583333334, &#39;RawValue&#39;: 1.3647804260253906},
+    {&#39;DateTime&#39;: 739897.0, &#39;RawValue&#39;: 1.365715742111206},
+    {&#39;DateTime&#39;: 739897.0416666666, &#39;RawValue&#39;: 1.3663002252578735},
+    {&#39;DateTime&#39;: 739897.0833333334, &#39;RawValue&#39;: 1.3670406341552734},
+    {&#39;DateTime&#39;: 739897.125, &#39;RawValue&#39;: 1.3672354221343994},
+    {&#39;DateTime&#39;: 739897.1666666666, &#39;RawValue&#39;: 1.367430329322815},
+    {&#39;DateTime&#39;: 739897.2083333334, &#39;RawValue&#39;: 1.3678200244903564},
+    {&#39;DateTime&#39;: 739897.25, &#39;RawValue&#39;: 1.3670796155929565},
+    {&#39;DateTime&#39;: 739897.2916666666, &#39;RawValue&#39;: 1.3668458461761475},
+    {&#39;DateTime&#39;: 739897.3333333334, &#39;RawValue&#39;: 1.3669236898422241},
+    {&#39;DateTime&#39;: 739897.375, &#39;RawValue&#39;: 1.3664950132369995},
+    {&#39;DateTime&#39;: 739897.4166666666, &#39;RawValue&#39;: 1.3663002252578735},
+    {&#39;DateTime&#39;: 739897.4583333334, &#39;RawValue&#39;: 1.3656766414642334},
+    {&#39;DateTime&#39;: 739897.5, &#39;RawValue&#39;: 1.365131139755249},
+    {&#39;DateTime&#39;: 739897.5416666666, &#39;RawValue&#39;: 1.3648583889007568},
+    {&#39;DateTime&#39;: 739897.5833333334, &#39;RawValue&#39;: 1.3628709316253662},
+    {&#39;DateTime&#39;: 739897.625, &#39;RawValue&#39;: 1.3610782623291016},
+    {&#39;DateTime&#39;: 739897.6666666666, &#39;RawValue&#39;: 1.3593246936798096},
+    {&#39;DateTime&#39;: 739897.7083333334, &#39;RawValue&#39;: 1.3583115339279175},
+    {&#39;DateTime&#39;: 739897.75, &#39;RawValue&#39;: 1.3567527532577515},
+    {&#39;DateTime&#39;: 739897.7916666666, &#39;RawValue&#39;: 1.3546483516693115},
+    {&#39;DateTime&#39;: 739897.8333333334, &#39;RawValue&#39;: 1.3537909984588623},
+    {&#39;DateTime&#39;: 739897.875, &#39;RawValue&#39;: 1.3548822402954102},
+    {&#39;DateTime&#39;: 739897.9166666666, &#39;RawValue&#39;: 1.356402039527893},
+    {&#39;DateTime&#39;: 739897.9583333334, &#39;RawValue&#39;: 1.356168270111084},
+    {&#39;DateTime&#39;: 739898.0, &#39;RawValue&#39;: 1.3560123443603516},
+    {&#39;DateTime&#39;: 739898.0416666666, &#39;RawValue&#39;: 1.3561292886734009},
+    {&#39;DateTime&#39;: 739898.0833333334, &#39;RawValue&#39;: 1.3567527532577515},
+    {&#39;DateTime&#39;: 739898.125, &#39;RawValue&#39;: 1.3569085597991943},
+    {&#39;DateTime&#39;: 739898.1666666666, &#39;RawValue&#39;: 1.3578828573226929},
+    {&#39;DateTime&#39;: 739898.2083333334, &#39;RawValue&#39;: 1.3577659130096436},
+    {&#39;DateTime&#39;: 739898.25, &#39;RawValue&#39;: 1.3578828573226929},
+    {&#39;DateTime&#39;: 739898.2916666666, &#39;RawValue&#39;: 1.3583893775939941},
+    {&#39;DateTime&#39;: 739898.3333333334, &#39;RawValue&#39;: 1.3577659130096436},
+    {&#39;DateTime&#39;: 739898.375, &#39;RawValue&#39;: 1.3574153184890747},
+    {&#39;DateTime&#39;: 739898.4166666666, &#39;RawValue&#39;: 1.3578048944473267},
+    {&#39;DateTime&#39;: 739898.4583333334, &#39;RawValue&#39;: 1.3579998016357422},
+    {&#39;DateTime&#39;: 739898.5, &#39;RawValue&#39;: 1.3576101064682007},
+    {&#39;DateTime&#39;: 739898.5416666666, &#39;RawValue&#39;: 1.3566358089447021},
+    {&#39;DateTime&#39;: 739898.5833333334, &#39;RawValue&#39;: 1.3559343814849854},
+    {&#39;DateTime&#39;: 739898.625, &#39;RawValue&#39;: 1.354063868522644},
+    {&#39;DateTime&#39;: 739898.6666666666, &#39;RawValue&#39;: 1.3535962104797363},
+    {&#39;DateTime&#39;: 739898.7083333334, &#39;RawValue&#39;: 1.3528947830200195},
+    {&#39;DateTime&#39;: 739898.75, &#39;RawValue&#39;: 1.3527778387069702},
+    {&#39;DateTime&#39;: 739898.7916666666, &#39;RawValue&#39;: 1.352660894393921},
+    {&#39;DateTime&#39;: 739898.8333333334, &#39;RawValue&#39;: 1.3525440692901611},
+    {&#39;DateTime&#39;: 739898.875, &#39;RawValue&#39;: 1.352271318435669},
+    {&#39;DateTime&#39;: 739898.9166666666, &#39;RawValue&#39;: 1.3525440692901611},
+    {&#39;DateTime&#39;: 739898.9583333334, &#39;RawValue&#39;: 1.3529727458953857},
+    {&#39;DateTime&#39;: 739899.0, &#39;RawValue&#39;: 1.3527389764785767},
+    {&#39;DateTime&#39;: 739899.0416666666, &#39;RawValue&#39;: 1.3534014225006104},
+    {&#39;DateTime&#39;: 739899.0833333334, &#39;RawValue&#39;: 1.354219675064087},
+    {&#39;DateTime&#39;: 739899.125, &#39;RawValue&#39;: 1.3544535636901855},
+    ...],
+   &#39;ObservationID&#39;: &#39;obs_id_000&#39;,
+   &#39;ProcessID&#39;: 10.0,
+   &#39;RefLevel&#39;: &#39;topw&#39;,
+   &#39;TimeShift&#39;: 0.0,
+   &#39;Unit&#39;: &#39;-m&#39;,
+   &#39;WaterDensity&#39;: nan,
+   &#39;iChange&#39;: 0}}}
+</pre></div></div>
+</div>
+</section>
+<section id="Extensions">
+<h2>Extensions<a class="headerlink" href="#Extensions" title="Link to this heading"></a></h2>
+<section id="Coupling-to-Panads">
+<h3>Coupling to Panads<a class="headerlink" href="#Coupling-to-Panads" title="Link to this heading"></a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">bf</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span>
+<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th></th>
+      <th>DateTime</th>
+      <th>RawValue</th>
+    </tr>
+    <tr>
+      <th>Entity</th>
+      <th>BROID</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="5" valign="top">GLD</th>
+      <th>GLD000000150371</th>
+      <td>2025-08-28 15:45:59.999996427</td>
+      <td>-1.595000</td>
+    </tr>
+    <tr>
+      <th>GLD000000150371</th>
+      <td>2025-10-03 10:33:59.999995751</td>
+      <td>-1.555000</td>
+    </tr>
+    <tr>
+      <th>GLD000000150371</th>
+      <td>2026-02-13 13:58:07.694004175</td>
+      <td>-1.040000</td>
+    </tr>
+    <tr>
+      <th>GLD000000150371</th>
+      <td>2025-08-28 15:00:00.000000000</td>
+      <td>1.257654</td>
+    </tr>
+    <tr>
+      <th>GLD000000150371</th>
+      <td>2025-08-28 15:59:59.999996650</td>
+      <td>1.240897</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+<section id="Coupling-to-HydroPandas">
+<h3>Coupling to HydroPandas<a class="headerlink" href="#Coupling-to-HydroPandas" title="Link to this heading"></a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">oc</span> <span class="o">=</span> <span class="n">bf</span><span class="o">.</span><span class="n">to_obscollection</span><span class="p">(</span><span class="n">entity</span><span class="o">=</span><span class="s2">&quot;GLD&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;BronFormat Export&quot;</span><span class="p">)</span>
+<span class="n">oc</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>x</th>
+      <th>y</th>
+      <th>location</th>
+      <th>filename</th>
+      <th>source</th>
+      <th>unit</th>
+      <th>tube_nr</th>
+      <th>screen_top</th>
+      <th>screen_bottom</th>
+      <th>ground_level</th>
+      <th>tube_top</th>
+      <th>metadata_available</th>
+      <th>obs</th>
+    </tr>
+    <tr>
+      <th>name</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>GLD000000150371</th>
+      <td>190918.35</td>
+      <td>535755.82</td>
+      <td>GLD000000150371</td>
+      <td></td>
+      <td>BronFormat</td>
+      <td></td>
+      <td>1</td>
+      <td>-1.782</td>
+      <td>-2.782</td>
+      <td>-0.263</td>
+      <td>0.248</td>
+      <td>False</td>
+      <td>GroundwaterObs GLD000000150371
+-----metadata--...</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">obs</span> <span class="o">=</span> <span class="n">oc</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s2">&quot;GLD000000150371&quot;</span><span class="p">,</span> <span class="s2">&quot;obs&quot;</span><span class="p">]</span>
+<span class="n">obs</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<p style="color:#808080";>hydropandas.GroundwaterObs</p>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>GLD000000150371</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>x</th>
+      <td>190918.35</td>
+    </tr>
+    <tr>
+      <th>y</th>
+      <td>535755.82</td>
+    </tr>
+    <tr>
+      <th>location</th>
+      <td>GLD000000150371</td>
+    </tr>
+    <tr>
+      <th>filename</th>
+      <td></td>
+    </tr>
+    <tr>
+      <th>source</th>
+      <td>BronFormat</td>
+    </tr>
+    <tr>
+      <th>unit</th>
+      <td></td>
+    </tr>
+    <tr>
+      <th>tube_nr</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>screen_top</th>
+      <td>-1.782</td>
+    </tr>
+    <tr>
+      <th>screen_bottom</th>
+      <td>-2.782</td>
+    </tr>
+    <tr>
+      <th>ground_level</th>
+      <td>-0.263</td>
+    </tr>
+    <tr>
+      <th>tube_top</th>
+      <td>0.248</td>
+    </tr>
+    <tr>
+      <th>metadata_available</th>
+      <td>False</td>
+    </tr>
+  </tbody>
+</table>
+</div><br>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>RawValue</th>
+    </tr>
+    <tr>
+      <th>DateTime</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2025-08-28 15:45:59.999996427</th>
+      <td>-1.595000</td>
+    </tr>
+    <tr>
+      <th>2025-10-03 10:33:59.999995751</th>
+      <td>-1.555000</td>
+    </tr>
+    <tr>
+      <th>2026-02-13 13:58:07.694004175</th>
+      <td>-1.040000</td>
+    </tr>
+    <tr>
+      <th>2025-08-28 15:00:00.000000000</th>
+      <td>1.257654</td>
+    </tr>
+    <tr>
+      <th>2025-08-28 15:59:59.999996650</th>
+      <td>1.240897</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>2026-02-13 09:00:00.000000000</th>
+      <td>1.771970</td>
+    </tr>
+    <tr>
+      <th>2026-02-13 09:59:59.999996650</th>
+      <td>1.770567</td>
+    </tr>
+    <tr>
+      <th>2026-02-13 11:00:00.000003349</th>
+      <td>1.768112</td>
+    </tr>
+    <tr>
+      <th>2026-02-13 12:00:00.000000000</th>
+      <td>1.766475</td>
+    </tr>
+    <tr>
+      <th>2026-02-13 12:59:59.999996650</th>
+      <td>1.764449</td>
+    </tr>
+  </tbody>
+</table>
+<p>4058 rows × 1 columns</p>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">obs</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&lt;Axes: xlabel=&#39;DateTime&#39;&gt;
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/example_12_1.png" src="_images/example_12_1.png" />
+</div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="BroFoPy Documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="api.html" class="btn btn-neutral float-right" title="API Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
