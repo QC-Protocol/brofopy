@@ -1,10 +1,11 @@
 """brofopy version information."""
 
-__version__ = "0.0.0"
 from importlib import import_module, metadata
 from platform import python_version
 
 from packaging.requirements import Requirement
+
+__version__ = "0.0.0"
 
 
 def get_versions(optional: bool = False) -> dict[str, str]:
