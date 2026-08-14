@@ -35,7 +35,7 @@ def matlab_datetime_to_pandas_timestamp(matlab_datetime: float) -> pd.Timestamp:
     return timestamp
 
 
-def to_dataframe(bronformat: "BronFormat") -> pd.DataFrame:
+def to_dataframe(bronformat: BronFormat) -> pd.DataFrame:
     """Convert BronFormat data to a pandas DataFrame.
 
     This flattens the nested BronFormat structure into a DataFrame with

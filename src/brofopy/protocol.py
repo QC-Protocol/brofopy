@@ -94,7 +94,7 @@ class HDF5Structure:
         def build_structure(name: str, obj: h5py.Group | h5py.Dataset) -> GroupInfo:
             """Recursively build GroupInfo structure from HDF5 object."""
             if isinstance(obj, h5py.Group) and (
-                name.startswith("#refs#") or name.startswith("#subsystem#")
+                name.startswith(("#refs#", "#subsystem#"))
             ):
                 return GroupInfo()
 
@@ -123,7 +123,7 @@ class HDF5Structure:
             groups = {}
             datasets = {}
             for name, obj in f.items():
-                if not (name.startswith("#refs#") or name.startswith("#subsystem#")):
+                if not (name.startswith(("#refs#", "#subsystem#"))):
                     if isinstance(obj, h5py.Group):
                         groups[name] = build_structure(name, obj)
                     elif isinstance(obj, h5py.Dataset):

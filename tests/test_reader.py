@@ -43,7 +43,7 @@ def test_read_gld_hdf5():
     assert len(result.GLD) > 0
 
     # Check first GLD entry has expected structure
-    first_broid, first_entry = next(iter(result.GLD.items()))
+    _, first_entry = next(iter(result.GLD.items()))
     assert isinstance(first_entry, dict)
 
     # GLD should have specific sub-entities
@@ -113,9 +113,7 @@ def test_read_guf_gpd_hdf5():
     assert isinstance(first_gpd, dict)
     # GPD may have Volumes sub-entity
     if "Volumes" in first_gpd:
-        assert isinstance(first_gpd["Volumes"], list) or isinstance(
-            first_gpd["Volumes"], dict
-        )
+        assert isinstance(first_gpd["Volumes"], (list, dict))
 
 
 def test_read_sad_hdf5():

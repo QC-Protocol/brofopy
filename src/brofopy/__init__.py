@@ -8,10 +8,10 @@ from brofopy.reader import read_bronformat
 from ._version import __version__, show_versions
 
 __all__ = [
-    "read_bronformat",
     "BronFormat",
-    "to_obscollection",
-    "to_dataframe",
     "__version__",
+    "read_bronformat",
     "show_versions",
+    "to_dataframe",
+    "to_obscollection",
 ]

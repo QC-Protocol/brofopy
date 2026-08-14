@@ -14,7 +14,7 @@ from .pd import matlab_datetime_to_pandas_timestamp
 
 
 def to_obscollection(
-    bronformat: "BronFormat",
+    bronformat: BronFormat,
     entity: Literal["GLD", "GAR"] = "GLD",
     name: str = "",
 ) -> ObsCollection:

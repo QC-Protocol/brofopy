@@ -235,7 +235,7 @@ def _h5py_group_to_dict(group: h5py.Group, h5file: h5py.File) -> dict[str, Any]:
     """Convert an HDF5 group to a dictionary."""
     result = {}
 
-    for key in group.keys():
+    for key in group:
         item = group[key]
         if isinstance(item, h5py.Dataset):
             result[key] = _extract_h5py_value(item, h5file)
@@ -296,7 +296,7 @@ def _extract_measurements_from_h5py_group(
             "RawValue": _convert_to_python_types(rv_values[i]),
         }
 
-        for key in group.keys():
+        for key in group:
             if key not in ["DateTime", "RawValue"]:
                 sub_dataset = group[key]
                 _ = sub_dataset[()]
@@ -388,9 +388,12 @@ def _extract_h5py_value(dataset: h5py.Dataset, h5file: h5py.File) -> Any:
         measurements_dataset = False
         if isinstance(first, h5py.h5r.Reference):
             ref_obj = h5file[first]
-            if isinstance(ref_obj, h5py.Group):
-                if "DateTime" in ref_obj and "RawValue" in ref_obj:
-                    measurements_dataset = True
+            if (
+                isinstance(ref_obj, h5py.Group)
+                and "DateTime" in ref_obj
+                and "RawValue" in ref_obj
+            ):
+                measurements_dataset = True
 
         if measurements_dataset:
             return _extract_measurements_from_h5py_dataset(dataset, h5file)
@@ -463,12 +466,12 @@ def _parse_h5py_entity_to_dict(
     elif isinstance(entity_obj, h5py.Group):
         has_ref_datasets = any(
             isinstance(entity_obj[k], h5py.Dataset) and entity_obj[k].dtype == object
-            for k in entity_obj.keys()
+            for k in entity_obj
         )
 
         if has_ref_datasets:
             first_dataset = None
-            for key in entity_obj.keys():
+            for key in entity_obj:
                 if (
                     isinstance(entity_obj[key], h5py.Dataset)
                     and entity_obj[key].dtype == object
@@ -487,7 +490,7 @@ def _parse_h5py_entity_to_dict(
                     entry_dict = {}
                     broid = None
 
-                    for sub_name in entity_obj.keys():
+                    for sub_name in entity_obj:
                         sub_obj = entity_obj[sub_name]
 
                         if isinstance(sub_obj, h5py.Dataset):
@@ -672,10 +675,10 @@ def read_bronformat(filepath: str | Path, backend: str = "auto") -> BronFormat:
         elif filepath.suffix.lower() == ".bron2":
             return read_bronformat_scipy(filepath)
         else:
-            try:
-                return read_bronformat_scipy(filepath)
-            except Exception:
-                return read_bronformat_h5py(filepath)
+            raise BronformatParseError(
+                f"Unsupported file extension '{filepath.suffix}'. "
+                "Supported extensions are .hdf5, .bronx, .bron2."
+            )
     else:
         raise ValueError(
             "Invalid backend. Choose 'auto', 'scipy' (for .bron2), or 'h5py' (for .hdf5/.bronx)."

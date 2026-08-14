@@ -54,7 +54,7 @@ def show_versions(optional: bool = False) -> None:
     """
     version_dict = get_versions(optional=optional)
 
-    max_len_key = max(len(key) for key in version_dict.keys()) + 1
+    max_len_key = max(len(key) for key in version_dict) + 1
     msg = ""
     for key, value in version_dict.items():
         leftside = f"{key.capitalize()}"
