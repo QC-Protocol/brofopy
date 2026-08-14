@@ -2,7 +2,7 @@
 
 BroFoPy is a Python package that reads data from the *BronFormat*. The Bronformat is an alternative
 dataformat for the [Basisregistratie Ondergrond, BRO](https://basisregistratieondergrond.nl/).
-BroFoPy converts the *.bron* files into a custom BronFormat class and provides a workflow to
+BroFoPy converts the *.bron/.hdf5* files into a custom BronFormat class and provides a workflow to
 convert the data into a [Pandas](https://github.com/pandas-dev/pandas) `DataFrame` or a
 [HydroPandas](https://github.com/ArtesiaWater/hydropandas) `ObsCollection`.
 
