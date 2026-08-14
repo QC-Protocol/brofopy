@@ -5,7 +5,7 @@ from platform import python_version
 
 from packaging.requirements import Requirement
 
-__version__ = "0.0.0"
+__version__ = "0.0.1"
 
 
 def get_versions(optional: bool = False) -> dict[str, str]:
